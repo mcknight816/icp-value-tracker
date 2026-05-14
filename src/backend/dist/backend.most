@@ -1,0 +1,194 @@
+// Version: 3.0.0
+type AnnouncementType__296806448 = {#general; #market_tip; #system_notice};
+type Announcement__598886070 =
+  {
+    announcementType : AnnouncementType__296806448;
+    body : Text;
+    createdAt : Int;
+    id : Nat;
+    isPublished : Bool;
+    title : Text;
+    updatedAt : Int
+  };
+type Data__791452850<K, V> =
+  {var count : Nat__490723111; kvs : [var ?(K, V)]};
+type ExecutionRecord__438854543 =
+  {
+    executedAt : Int;
+    id : Text;
+    remainingICP : Float;
+    saleValue : Float;
+    targetPrice : Float;
+    tokensSold : Float
+  };
+type ICP24hStats__642978945 =
+  {fetchedAt : Int; high : Float; isStale : Bool; low : Float};
+type Internal__8484328<K, V> =
+  {children : [var ?Node__46230540<K, V>]; data : Data__791452850<K, V>};
+type Leaf__809889148<K, V> = {data : Data__791452850<K, V>};
+type Map__158565046<K, V> = Map__297112838<K, V>;
+type Map__297112838<K, V> =
+  {var root : Node__46230540<K, V>; var size : Nat__490723111};
+type Map__605269027<K, V> = Map__158565046<K, V>;
+type MarketDataPoint__131852019 =
+  {
+    fearGreedScore : Nat;
+    priceUSD : Float;
+    timestamp : Int;
+    volume24h : Float
+  };
+type Nat__490723111 = Nat__920180692;
+type Nat__920180692 = Nat;
+type NewsItem__1016571300 =
+  {publishedAt : Text; source : Text; title : Text; url : Text};
+type Node__46230540<K, V> =
+  {#internal : Internal__8484328<K, V>; #leaf : Leaf__809889148<K, V>};
+type OldPortfolioRecord__740199743 =
+  {
+    icpAmount : Float;
+    investedAmount : Float;
+    priceTargets : [OldPriceTarget__796518500]
+  };
+type OldPriceTarget__796518500 =
+  {
+    icpAmount : Float;
+    id : Text;
+    notifyEmail : ?Text;
+    notifyViaEmail : Bool;
+    notifyViaPhone : Bool;
+    targetPrice : Float;
+    tokensToSell : Float;
+    triggered : Bool
+  };
+type OldUserSettings__138787562 =
+  {
+    baseCurrency : ?Text;
+    email : ?Text;
+    language : ?Text;
+    phone : ?Text;
+    theme : ?Text
+  };
+type PortfolioRecord__888508526 =
+  {
+    icpAmount : Float;
+    investedAmount : Float;
+    priceTargets : [PriceTarget__538492711]
+  };
+type PriceResult__385336602 =
+  {fetchedAt : Int; isStale : Bool; priceUSD : Float; source : Text};
+type PriceTarget__538492711 =
+  {
+    icpAmount : Float;
+    id : Text;
+    notifyEmail : ?Text;
+    notifyViaEmail : Bool;
+    notifyViaPhone : Bool;
+    targetPrice : Float;
+    tokensToSell : Float;
+    triggered : Bool
+  };
+type SocialTrendingResult__184477071 =
+  {fetchedAt : Int; isStale : Bool; score : Float};
+type UserRole__1073662873 = {#admin; #guest; #user};
+type UserSettings__892154084 =
+  {
+    baseCurrency : ?Text;
+    email : ?Text;
+    language : ?Text;
+    notifyEmail : ?Bool;
+    notifyPhone : ?Bool;
+    phone : ?Text;
+    theme : ?Text
+  };
+actor ({
+  stable accessControlState :
+    {
+      var adminAssigned : Bool;
+      userRoles : Map__605269027<Principal, UserRole__1073662873>
+    };
+  stable announcementState : {var nextId : Nat};
+  stable announcements :
+    {
+      var root : Node__46230540<Nat, Announcement__598886070>;
+      var size : Nat__490723111
+    };
+  stable defaultPortfolioRecord :
+    {
+      icpAmount : Float;
+      investedAmount : Float;
+      priceTargets : [PriceTarget__538492711]
+    };
+  stable donationAddressStore : {var value : Text};
+  stable executionHistory :
+    {
+      var root : Node__46230540<Principal, [ExecutionRecord__438854543]>;
+      var size : Nat__490723111
+    };
+  stable marketHistory :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?MarketDataPoint__131852019]];
+      var elementIndex : Nat__490723111
+    };
+  stable newsCacheCT :
+    {var fetchedAt : Int; var items : [NewsItem__1016571300]};
+  stable newsCacheDecrypt :
+    {var fetchedAt : Int; var items : [NewsItem__1016571300]};
+  stable newsCacheDfinity :
+    {var fetchedAt : Int; var items : [NewsItem__1016571300]};
+  in portfolioRecords :
+    Map__605269027<Principal, OldPortfolioRecord__740199743>;
+  stable priceCache : {var value : ?PriceResult__385336602};
+  stable socialCache : {var value : ?SocialTrendingResult__184477071};
+  stable stats24hCache : {var value : ?ICP24hStats__642978945};
+  in userSettings : Map__605269027<Principal, OldUserSettings__138787562>
+}, {
+  stable accessControlState :
+    {
+      var adminAssigned : Bool;
+      userRoles : Map__605269027<Principal, UserRole__1073662873>
+    };
+  stable announcementState : {var nextId : Nat};
+  stable announcements :
+    {
+      var root : Node__46230540<Nat, Announcement__598886070>;
+      var size : Nat__490723111
+    };
+  stable defaultPortfolioRecord :
+    {
+      icpAmount : Float;
+      investedAmount : Float;
+      priceTargets : [PriceTarget__538492711]
+    };
+  stable donationAddressStore : {var value : Text};
+  stable executionHistory :
+    {
+      var root : Node__46230540<Principal, [ExecutionRecord__438854543]>;
+      var size : Nat__490723111
+    };
+  stable marketHistory :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?MarketDataPoint__131852019]];
+      var elementIndex : Nat__490723111
+    };
+  stable newsCacheCT :
+    {var fetchedAt : Int; var items : [NewsItem__1016571300]};
+  stable newsCacheDecrypt :
+    {var fetchedAt : Int; var items : [NewsItem__1016571300]};
+  stable newsCacheDfinity :
+    {var fetchedAt : Int; var items : [NewsItem__1016571300]};
+  stable portfolioRecords :
+    {
+      var root : Node__46230540<Principal, PortfolioRecord__888508526>;
+      var size : Nat__490723111
+    };
+  stable priceCache : {var value : ?PriceResult__385336602};
+  stable socialCache : {var value : ?SocialTrendingResult__184477071};
+  stable stats24hCache : {var value : ?ICP24hStats__642978945};
+  stable userSettings :
+    {
+      var root : Node__46230540<Principal, UserSettings__892154084>;
+      var size : Nat__490723111
+    }
+});

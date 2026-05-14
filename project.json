@@ -1,0 +1,24 @@
+{
+  "overview": "ICP Value Tracker is a personal portfolio tool for long-term ICP investors. Track your holdings, live price with 24h high/low, fear & greed + social trending, exit strategy planning, ICP news feed, and execution history — all tied to your Internet Identity login.",
+  "features": [
+    "Live ICP price with 24h High/Low, source label, and 60-second auto-refresh",
+    "Investment Tracker split into 3 full-width card sections",
+    "Social Trending score card alongside Fear & Greed gauge",
+    "ICP News feed tab with live articles from crypto news APIs",
+    "Exit Strategy planner with price targets, executed button, and notification alerts",
+    "Historical Data tab with market metrics and execution history",
+    "Dark/light mode toggle and customizable refresh interval in Settings",
+    "Per-user data stored via Internet Identity login"
+  ],
+  "category": "finance",
+  "tags": [
+    "icp",
+    "crypto",
+    "portfolio",
+    "tracker",
+    "investment",
+    "defi",
+    "internet-computer"
+  ],
+  "last_updated": "2026-05-13T04:08:52.038Z"
+}

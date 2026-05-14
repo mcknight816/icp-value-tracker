@@ -1,0 +1,218 @@
+type http_request_result = 
+ record {
+   body: blob;
+   headers: vec http_header;
+   status: nat;
+ };
+type http_header = 
+ record {
+   name: text;
+   value: text;
+ };
+type UserSettings = 
+ record {
+   baseCurrency: opt text;
+   email: opt text;
+   language: opt text;
+   notifyEmail: opt bool;
+   notifyPhone: opt bool;
+   phone: opt text;
+   theme: opt text;
+ };
+type UserRole = 
+ variant {
+   admin;
+   guest;
+   user;
+ };
+type TransformationOutput = 
+ record {
+   body: blob;
+   headers: vec http_header;
+   status: nat;
+ };
+type TransformationInput = 
+ record {
+   context: blob;
+   response: http_request_result;
+ };
+type SocialTrendingResult = 
+ record {
+   fetchedAt: int;
+   isStale: bool;
+   score: float64;
+ };
+type PriceVolumePoint = 
+ record {
+   priceUSD: float64;
+   timestamp: int;
+   volume24h: float64;
+ };
+type PriceTarget = 
+ record {
+   icpAmount: float64;
+   id: text;
+   notifyEmail: opt text;
+   notifyViaEmail: bool;
+   notifyViaPhone: bool;
+   targetPrice: float64;
+   tokensToSell: float64;
+   triggered: bool;
+ };
+type PriceResult = 
+ record {
+   fetchedAt: int;
+   isStale: bool;
+   priceUSD: float64;
+   source: text;
+ };
+type PriceResponse = 
+ variant {
+   err: text;
+   ok: PriceResult;
+ };
+type PortfolioRecord = 
+ record {
+   icpAmount: float64;
+   investedAmount: float64;
+   priceTargets: vec PriceTarget;
+ };
+type NewsItem = 
+ record {
+   publishedAt: text;
+   source: text;
+   title: text;
+   url: text;
+ };
+type MarketDataPoint = 
+ record {
+   fearGreedScore: nat;
+   priceUSD: float64;
+   timestamp: int;
+   volume24h: float64;
+ };
+type ICP24hStats = 
+ record {
+   fetchedAt: int;
+   high: float64;
+   isStale: bool;
+   low: float64;
+ };
+type FearGreedResult = 
+ record {
+   fetchedAt: int;
+   labelText: text;
+   score: nat;
+ };
+type ExecutionRecord = 
+ record {
+   executedAt: int;
+   id: text;
+   remainingICP: float64;
+   saleValue: float64;
+   targetPrice: float64;
+   tokensSold: float64;
+ };
+type AnnouncementType = 
+ variant {
+   general;
+   market_tip;
+   system_notice;
+ };
+type Announcement = 
+ record {
+   announcementType: AnnouncementType;
+   body: text;
+   createdAt: int;
+   id: nat;
+   isPublished: bool;
+   title: text;
+   updatedAt: int;
+ };
+service : {
+  _initializeAccessControl: () -> ();
+  assignCallerUserRole: (user: principal, role: UserRole) -> ();
+  checkAndTriggerAlerts: (currentPrice: float64) -> ();
+  createAnnouncement: (title: text, body: text, announcementType:
+   AnnouncementType) -> (nat);
+  deleteAnnouncement: (id: nat) -> (bool);
+  deletePortfolioRecord: () -> ();
+  deleteUserSettings: () -> ();
+  fetchAndStoreMarketData: () -> ();
+  fetchCoinTelegraphItems: () -> (vec NewsItem);
+  fetchDecryptItems: () -> (vec NewsItem);
+  fetchDfinityBlogItems: () -> (vec NewsItem);
+  /// Fetches the ICP balance for the admin wallet address via the ICP Ledger API.
+  /// Returns the balance as a Text string (e.g. "1234.5678").
+  /// Returns "0.0000" if the HTTP outcall fails or the response cannot be parsed.
+  getAdminICPBalance: () -> (text);
+  getAllAnnouncements: () -> (vec Announcement) query;
+  getCallerUserRole: () -> (UserRole) query;
+  getCurrentFearGreed: () -> (opt FearGreedResult) query;
+  /// Returns the ICP donation wallet address.
+  getDonationAddress: () -> (text) query;
+  getExecutionHistory: () -> (vec ExecutionRecord) query;
+  /// Returns 24-hour high/low price for ICP. Caches fresh results; returns stale on failure.
+  getICP24hStats: () -> (opt ICP24hStats);
+  /// Returns recent ICP news items. Each feed is fetched and cached independently
+  /// with a 5-minute TTL. Stale cached items are served when a feed fails.
+  /// Returns recent ICP news items. Each feed is fetched and cached independently
+  /// with a 5-minute TTL. All three feeds are fetched IN PARALLEL so one slow
+  /// feed cannot block the others. Stale cached items are served when a feed fails.
+  getICPNews: () -> (vec NewsItem);
+  getICPNewsRaw: () -> (vec NewsItem);
+  /// Fetches the current ICP price, caches successes, and falls back to stale cache.
+  /// Returns #ok with isStale=false on a live price, isStale=true for a cached stale
+  /// price, or #err only when all sources fail and no cache is available.
+  getICPPrice: () -> (PriceResponse);
+  /// Transform callback for admin ICP balance HTTP responses.
+  getICPPriceRaw: () -> (PriceResponse);
+  getMarketChart: (days: nat) -> (vec PriceVolumePoint) query;
+  getMarketHistory: () -> (vec MarketDataPoint) query;
+  getPortfolioRecord: () -> (PortfolioRecord) query;
+  getPublishedAnnouncements: () -> (vec Announcement) query;
+  /// Returns the ICP social trending score (0-100). Caches result; returns stale on failure.
+  getSocialTrending: () -> (SocialTrendingResult);
+  getUserSettings: () -> (UserSettings) query;
+  isCallerAdmin: () -> (bool) query;
+  saveExecutionRecord: ("record": ExecutionRecord) -> ();
+  savePortfolioRecord: (icpAmount: float64, investedAmount: float64,
+   priceTargets: vec PriceTarget) -> ();
+  saveUserSettings: (email: opt text, phone: opt text, theme: opt text,
+   baseCurrency: opt text, language: opt text, notifyEmail: opt bool,
+   notifyPhone: opt bool) -> ();
+  sendTestEmail: () -> (variant {
+                          err: text;
+                          ok: text;
+                        });
+  toggleAnnouncementPublished: (id: nat) -> (bool);
+  /// Transform callback for admin ICP balance HTTP responses.
+  transformAdminBalance: (input: TransformationInput) ->
+   (TransformationOutput) query;
+  transformBinance24h: (input: TransformationInput) ->
+   (TransformationOutput) query;
+  transformCoinTelegraphRss: (input: TransformationInput) ->
+   (TransformationOutput) query;
+  transformDecryptRss: (input: TransformationInput) ->
+   (TransformationOutput) query;
+  transformDfinityBlog: (input: TransformationInput) ->
+   (TransformationOutput) query;
+  transformFearGreed: (input: TransformationInput) ->
+   (TransformationOutput) query;
+  transformMarketChart: (input: TransformationInput) ->
+   (TransformationOutput) query;
+  transformNewsItems: (input: TransformationInput) ->
+   (TransformationOutput) query;
+  transformPrice: (input: TransformationInput) ->
+   (TransformationOutput) query;
+  transformPriceBinance: (input: TransformationInput) ->
+   (TransformationOutput) query;
+  transformPriceCoinbase: (input: TransformationInput) ->
+   (TransformationOutput) query;
+  /// Counter for announcement IDs -- wrapped in a record so it is mutable by reference.
+  transformSocialStats: (input: TransformationInput) ->
+   (TransformationOutput) query;
+  /// Cached social trending score (survives upgrades via EOP).
+  updateAnnouncement: (id: nat, title: text, body: text, announcementType:
+   AnnouncementType) -> (bool);
+}
