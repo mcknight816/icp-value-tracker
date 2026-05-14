@@ -9,7 +9,6 @@ export function AboutTab() {
   const { data: donationAddress } = useGetDonationAddress();
   const [copied, setCopied] = useState(false);
 
-  // Show the fallback immediately; update to backend value when it resolves
   const address =
     donationAddress && donationAddress.trim().length > 0
       ? donationAddress
@@ -26,56 +25,134 @@ export function AboutTab() {
     });
   }
 
+  const featureCategories = [
+    {
+      label: "Price & Market",
+      icon: "📈",
+      features: [
+        "Live ICP price from CoinGecko, Binance & Coinbase with automatic fallback",
+        "24h High / Low display synced to your refresh interval",
+        "Fear & Greed Index — live ICP market sentiment meter",
+        "Social Trending — ICP social media trending rating",
+        "7-day Price Chart with volume bars",
+      ],
+    },
+    {
+      label: "Portfolio & Strategy",
+      icon: "💼",
+      features: [
+        "Portfolio Value Calculator — ICP amount, invested USD, current value",
+        "Gain / Loss tracker with Avg. Entry (break-even) price",
+        "Exit Strategy Planner — set price targets with token amounts to sell",
+        "Execute trades directly — records each completed sale to Historical Data",
+        "Email alerts when ICP hits your target prices",
+      ],
+    },
+    {
+      label: "Community & News",
+      icon: "🌐",
+      features: [
+        "Community Chat — real-time ICP discussion with threaded replies",
+        "Like / Dislike, Shill & FUD reactions with automatic sub-tab sorting",
+        "Image uploads and YouTube link previews in chat",
+        "ICP News Feed — DFINITY Forum, CoinGecko & community sources",
+        "Admin announcements pinned to the top of the news feed",
+      ],
+    },
+    {
+      label: "Personalization & Security",
+      icon: "🔒",
+      features: [
+        "Internet Identity login — decentralized, no passwords",
+        "All data (portfolio, settings, exit plan) tied to your identity on-chain",
+        "Multi-currency support — choose your base currency; values shown in both",
+        "Dark / Light mode saved to your account",
+        "7 languages: English, Español, Français, Deutsch, 中文, 日本語, Português",
+      ],
+    },
+  ];
+
   return (
     <div className="space-y-6" data-ocid="about.section">
-      {/* App Info */}
-      <div className="bg-card border border-border rounded-xl p-6 space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-accent/20 border border-accent/30 flex items-center justify-center shrink-0">
-            <Info className="w-5 h-5 text-accent" />
+      {/* App Header */}
+      <div className="bg-card border border-border rounded-xl p-6">
+        <div className="flex items-start gap-4">
+          <div className="w-12 h-12 rounded-xl bg-accent/20 border border-accent/30 flex items-center justify-center shrink-0 text-2xl">
+            ⚡
           </div>
-          <div>
-            <h2 className="font-display font-semibold text-lg text-foreground">
-              ICP Value Tracker
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Your personal Internet Computer portfolio dashboard
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="font-display font-bold text-2xl text-foreground tracking-tight">
+                ICP Pulse
+              </h1>
+              <span className="inline-flex items-center rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white shadow-sm">
+                beta
+              </span>
+            </div>
+            <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+              Your all-in-one Internet Computer portfolio dashboard — live
+              prices, exit strategy planning, community chat, and market
+              intelligence, all secured on-chain via Internet Identity.
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-          <div className="space-y-2">
-            <h3 className="text-sm font-semibold text-foreground">Features</h3>
-            <ul className="space-y-1.5 text-sm text-muted-foreground">
-              {[
-                "Live ICP price with 24h high/low",
-                "Portfolio value & investment tracking",
-                "Fear & greed meter + social trending",
-                "Exit strategy planner with price targets",
-                "ICP & ecosystem news aggregator",
-                "Historical data & execution log",
-              ].map((item) => (
-                <li key={item} className="flex items-start gap-2">
-                  <span className="text-accent mt-0.5">•</span>
-                  {item}
-                </li>
-              ))}
-            </ul>
+        <div className="mt-5 pt-5 border-t border-border">
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Built on the{" "}
+            <span className="text-foreground font-medium">
+              Internet Computer
+            </span>{" "}
+            blockchain (developed by DFINITY Foundation), ICP Pulse stores your
+            data securely on-chain — no central servers, no passwords. Prices
+            refresh automatically from multiple sources with graceful fallback
+            to cached values, and your personal settings are always tied to your
+            unique Internet Identity.
+          </p>
+        </div>
+      </div>
+
+      {/* Features Grid */}
+      <div className="bg-card border border-border rounded-xl p-6 space-y-5">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg bg-accent/20 border border-accent/30 flex items-center justify-center shrink-0">
+            <Info className="w-4.5 h-4.5 text-accent" />
           </div>
-          <div className="space-y-2">
-            <h3 className="text-sm font-semibold text-foreground">About</h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Built on the Internet Computer blockchain, your data is stored
-              securely on-chain and tied to your Internet Identity — no
-              passwords, no central servers.
-            </p>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Prices refresh automatically and pull from multiple sources
-              (CoinGecko, Binance, Coinbase) with graceful fallback to cached
-              values when feeds are temporarily unavailable.
+          <div>
+            <h2 className="font-display font-semibold text-base text-foreground">
+              What's included in beta
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              15 features across 4 categories
             </p>
           </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          {featureCategories.map((cat) => (
+            <div
+              key={cat.label}
+              className="rounded-lg bg-muted/40 border border-border p-4 space-y-2.5"
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-base leading-none">{cat.icon}</span>
+                <h3 className="text-sm font-semibold text-foreground">
+                  {cat.label}
+                </h3>
+              </div>
+              <ul className="space-y-1.5">
+                {cat.features.map((f) => (
+                  <li
+                    key={f}
+                    className="flex items-start gap-2 text-xs text-muted-foreground leading-relaxed"
+                  >
+                    <span className="text-accent mt-0.5 shrink-0">✓</span>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -85,29 +162,28 @@ export function AboutTab() {
         data-ocid="about.donation.card"
       >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-accent/20 border border-accent/30 flex items-center justify-center shrink-0">
-            <Heart className="w-5 h-5 text-accent" />
+          <div className="w-9 h-9 rounded-lg bg-accent/20 border border-accent/30 flex items-center justify-center shrink-0">
+            <Heart className="w-4.5 h-4.5 text-accent" />
           </div>
           <div>
-            <h2 className="font-display font-semibold text-lg text-foreground">
-              Support This Project
+            <h2 className="font-display font-semibold text-base text-foreground">
+              Support ICP Pulse
             </h2>
-            <p className="text-sm text-muted-foreground">
-              Help keep the tracker running and improving
+            <p className="text-xs text-muted-foreground">
+              Help keep the app running and growing
             </p>
           </div>
         </div>
 
         <p className="text-sm text-muted-foreground leading-relaxed">
-          This tracker runs on the Internet Computer and is free to use. If you
-          find it useful, consider sending a small ICP donation to help cover
-          compute cycles and ongoing development. Every contribution is
-          appreciated!
+          ICP Pulse is free to use and runs entirely on the Internet Computer.
+          If it's been useful to your ICP journey, consider sending a small ICP
+          donation to help cover on-chain compute cycles and future development.
+          Every contribution is genuinely appreciated!
         </p>
 
         {address ? (
           <div className="space-y-5">
-            {/* Wallet address */}
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 <Wallet className="w-3.5 h-3.5" />
@@ -143,7 +219,6 @@ export function AboutTab() {
               </div>
             </div>
 
-            {/* QR code */}
             {qrUrl && (
               <div className="flex flex-col items-center gap-3">
                 <p className="text-xs text-muted-foreground">

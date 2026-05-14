@@ -27429,6 +27429,28 @@ const Announcement = Record({
   "createdAt": Int,
   "updatedAt": Int
 });
+const UrlPreview = Record({
+  "url": Text$1,
+  "title": Text$1,
+  "thumbnailUrl": Text$1,
+  "description": Text$1
+});
+const ChatMessage = Record({
+  "id": Nat,
+  "tab": Text$1,
+  "isDeleted": Bool,
+  "content": Text$1,
+  "shills": Vec(Principal2),
+  "fuds": Vec(Principal2),
+  "authorName": Text$1,
+  "likes": Vec(Principal2),
+  "imageKey": Opt(Text$1),
+  "timestamp": Int,
+  "replyToId": Opt(Nat),
+  "dislikes": Vec(Principal2),
+  "authorPrincipal": Principal2,
+  "urlPreview": Opt(UrlPreview)
+});
 const FearGreedResult = Record({
   "fetchedAt": Int,
   "labelText": Text$1,
@@ -27526,6 +27548,11 @@ Service({
     []
   ),
   "deleteAnnouncement": Func([Nat], [Bool], []),
+  "deleteChatMessage": Func(
+    [Nat],
+    [Variant({ "ok": Null, "err": Text$1 })],
+    []
+  ),
   "deletePortfolioRecord": Func([], [], []),
   "deleteUserSettings": Func([], [], []),
   "fetchAndStoreMarketData": Func([], [], []),
@@ -27535,7 +27562,13 @@ Service({
   "getAdminICPBalance": Func([], [Text$1], []),
   "getAllAnnouncements": Func([], [Vec(Announcement)], ["query"]),
   "getCallerUserRole": Func([], [UserRole], ["query"]),
+  "getChatMessages": Func(
+    [Nat, Nat],
+    [Vec(ChatMessage)],
+    ["query"]
+  ),
   "getCurrentFearGreed": Func([], [Opt(FearGreedResult)], ["query"]),
+  "getCyclesBalance": Func([], [Nat], ["query"]),
   "getDonationAddress": Func([], [Text$1], ["query"]),
   "getExecutionHistory": Func([], [Vec(ExecutionRecord)], ["query"]),
   "getICP24hStats": Func([], [Opt(ICP24hStats)], []),
@@ -27558,6 +27591,11 @@ Service({
   "getSocialTrending": Func([], [SocialTrendingResult], []),
   "getUserSettings": Func([], [UserSettings], ["query"]),
   "isCallerAdmin": Func([], [Bool], ["query"]),
+  "postChatMessage": Func(
+    [Text$1, Opt(Text$1), Opt(Nat), Opt(UrlPreview)],
+    [Variant({ "ok": ChatMessage, "err": Text$1 })],
+    []
+  ),
   "saveExecutionRecord": Func([ExecutionRecord], [], []),
   "savePortfolioRecord": Func(
     [Float64, Float64, Vec(PriceTarget)],
@@ -27583,6 +27621,16 @@ Service({
     []
   ),
   "toggleAnnouncementPublished": Func([Nat], [Bool], []),
+  "toggleChatLike": Func(
+    [Nat, Bool],
+    [Variant({ "ok": ChatMessage, "err": Text$1 })],
+    []
+  ),
+  "toggleChatShill": Func(
+    [Nat, Bool],
+    [Variant({ "ok": ChatMessage, "err": Text$1 })],
+    []
+  ),
   "transformAdminBalance": Func(
     [TransformationInput],
     [TransformationOutput],
@@ -27675,6 +27723,28 @@ const idlFactory = ({ IDL: IDL2 }) => {
     "createdAt": IDL2.Int,
     "updatedAt": IDL2.Int
   });
+  const UrlPreview2 = IDL2.Record({
+    "url": IDL2.Text,
+    "title": IDL2.Text,
+    "thumbnailUrl": IDL2.Text,
+    "description": IDL2.Text
+  });
+  const ChatMessage2 = IDL2.Record({
+    "id": IDL2.Nat,
+    "tab": IDL2.Text,
+    "isDeleted": IDL2.Bool,
+    "content": IDL2.Text,
+    "shills": IDL2.Vec(IDL2.Principal),
+    "fuds": IDL2.Vec(IDL2.Principal),
+    "authorName": IDL2.Text,
+    "likes": IDL2.Vec(IDL2.Principal),
+    "imageKey": IDL2.Opt(IDL2.Text),
+    "timestamp": IDL2.Int,
+    "replyToId": IDL2.Opt(IDL2.Nat),
+    "dislikes": IDL2.Vec(IDL2.Principal),
+    "authorPrincipal": IDL2.Principal,
+    "urlPreview": IDL2.Opt(UrlPreview2)
+  });
   const FearGreedResult2 = IDL2.Record({
     "fetchedAt": IDL2.Int,
     "labelText": IDL2.Text,
@@ -27766,6 +27836,11 @@ const idlFactory = ({ IDL: IDL2 }) => {
       []
     ),
     "deleteAnnouncement": IDL2.Func([IDL2.Nat], [IDL2.Bool], []),
+    "deleteChatMessage": IDL2.Func(
+      [IDL2.Nat],
+      [IDL2.Variant({ "ok": IDL2.Null, "err": IDL2.Text })],
+      []
+    ),
     "deletePortfolioRecord": IDL2.Func([], [], []),
     "deleteUserSettings": IDL2.Func([], [], []),
     "fetchAndStoreMarketData": IDL2.Func([], [], []),
@@ -27775,7 +27850,13 @@ const idlFactory = ({ IDL: IDL2 }) => {
     "getAdminICPBalance": IDL2.Func([], [IDL2.Text], []),
     "getAllAnnouncements": IDL2.Func([], [IDL2.Vec(Announcement2)], ["query"]),
     "getCallerUserRole": IDL2.Func([], [UserRole2], ["query"]),
+    "getChatMessages": IDL2.Func(
+      [IDL2.Nat, IDL2.Nat],
+      [IDL2.Vec(ChatMessage2)],
+      ["query"]
+    ),
     "getCurrentFearGreed": IDL2.Func([], [IDL2.Opt(FearGreedResult2)], ["query"]),
+    "getCyclesBalance": IDL2.Func([], [IDL2.Nat], ["query"]),
     "getDonationAddress": IDL2.Func([], [IDL2.Text], ["query"]),
     "getExecutionHistory": IDL2.Func([], [IDL2.Vec(ExecutionRecord2)], ["query"]),
     "getICP24hStats": IDL2.Func([], [IDL2.Opt(ICP24hStats2)], []),
@@ -27798,6 +27879,11 @@ const idlFactory = ({ IDL: IDL2 }) => {
     "getSocialTrending": IDL2.Func([], [SocialTrendingResult2], []),
     "getUserSettings": IDL2.Func([], [UserSettings2], ["query"]),
     "isCallerAdmin": IDL2.Func([], [IDL2.Bool], ["query"]),
+    "postChatMessage": IDL2.Func(
+      [IDL2.Text, IDL2.Opt(IDL2.Text), IDL2.Opt(IDL2.Nat), IDL2.Opt(UrlPreview2)],
+      [IDL2.Variant({ "ok": ChatMessage2, "err": IDL2.Text })],
+      []
+    ),
     "saveExecutionRecord": IDL2.Func([ExecutionRecord2], [], []),
     "savePortfolioRecord": IDL2.Func(
       [IDL2.Float64, IDL2.Float64, IDL2.Vec(PriceTarget2)],
@@ -27823,6 +27909,16 @@ const idlFactory = ({ IDL: IDL2 }) => {
       []
     ),
     "toggleAnnouncementPublished": IDL2.Func([IDL2.Nat], [IDL2.Bool], []),
+    "toggleChatLike": IDL2.Func(
+      [IDL2.Nat, IDL2.Bool],
+      [IDL2.Variant({ "ok": ChatMessage2, "err": IDL2.Text })],
+      []
+    ),
+    "toggleChatShill": IDL2.Func(
+      [IDL2.Nat, IDL2.Bool],
+      [IDL2.Variant({ "ok": ChatMessage2, "err": IDL2.Text })],
+      []
+    ),
     "transformAdminBalance": IDL2.Func(
       [TransformationInput2],
       [TransformationOutput2],
@@ -27984,6 +28080,20 @@ class Backend {
       return result;
     }
   }
+  async deleteChatMessage(arg0) {
+    if (this.processError) {
+      try {
+        const result = await this.actor.deleteChatMessage(arg0);
+        return from_candid_variant_n5(this._uploadFile, this._downloadFile, result);
+      } catch (e3) {
+        this.processError(e3);
+        throw new Error("unreachable");
+      }
+    } else {
+      const result = await this.actor.deleteChatMessage(arg0);
+      return from_candid_variant_n5(this._uploadFile, this._downloadFile, result);
+    }
+  }
   async deletePortfolioRecord() {
     if (this.processError) {
       try {
@@ -28086,42 +28196,70 @@ class Backend {
     if (this.processError) {
       try {
         const result = await this.actor.getAllAnnouncements();
-        return from_candid_vec_n5(this._uploadFile, this._downloadFile, result);
+        return from_candid_vec_n6(this._uploadFile, this._downloadFile, result);
       } catch (e3) {
         this.processError(e3);
         throw new Error("unreachable");
       }
     } else {
       const result = await this.actor.getAllAnnouncements();
-      return from_candid_vec_n5(this._uploadFile, this._downloadFile, result);
+      return from_candid_vec_n6(this._uploadFile, this._downloadFile, result);
     }
   }
   async getCallerUserRole() {
     if (this.processError) {
       try {
         const result = await this.actor.getCallerUserRole();
-        return from_candid_UserRole_n10(this._uploadFile, this._downloadFile, result);
+        return from_candid_UserRole_n11(this._uploadFile, this._downloadFile, result);
       } catch (e3) {
         this.processError(e3);
         throw new Error("unreachable");
       }
     } else {
       const result = await this.actor.getCallerUserRole();
-      return from_candid_UserRole_n10(this._uploadFile, this._downloadFile, result);
+      return from_candid_UserRole_n11(this._uploadFile, this._downloadFile, result);
+    }
+  }
+  async getChatMessages(arg0, arg1) {
+    if (this.processError) {
+      try {
+        const result = await this.actor.getChatMessages(arg0, arg1);
+        return from_candid_vec_n13(this._uploadFile, this._downloadFile, result);
+      } catch (e3) {
+        this.processError(e3);
+        throw new Error("unreachable");
+      }
+    } else {
+      const result = await this.actor.getChatMessages(arg0, arg1);
+      return from_candid_vec_n13(this._uploadFile, this._downloadFile, result);
     }
   }
   async getCurrentFearGreed() {
     if (this.processError) {
       try {
         const result = await this.actor.getCurrentFearGreed();
-        return from_candid_opt_n12(this._uploadFile, this._downloadFile, result);
+        return from_candid_opt_n19(this._uploadFile, this._downloadFile, result);
       } catch (e3) {
         this.processError(e3);
         throw new Error("unreachable");
       }
     } else {
       const result = await this.actor.getCurrentFearGreed();
-      return from_candid_opt_n12(this._uploadFile, this._downloadFile, result);
+      return from_candid_opt_n19(this._uploadFile, this._downloadFile, result);
+    }
+  }
+  async getCyclesBalance() {
+    if (this.processError) {
+      try {
+        const result = await this.actor.getCyclesBalance();
+        return result;
+      } catch (e3) {
+        this.processError(e3);
+        throw new Error("unreachable");
+      }
+    } else {
+      const result = await this.actor.getCyclesBalance();
+      return result;
     }
   }
   async getDonationAddress() {
@@ -28156,14 +28294,14 @@ class Backend {
     if (this.processError) {
       try {
         const result = await this.actor.getICP24hStats();
-        return from_candid_opt_n13(this._uploadFile, this._downloadFile, result);
+        return from_candid_opt_n20(this._uploadFile, this._downloadFile, result);
       } catch (e3) {
         this.processError(e3);
         throw new Error("unreachable");
       }
     } else {
       const result = await this.actor.getICP24hStats();
-      return from_candid_opt_n13(this._uploadFile, this._downloadFile, result);
+      return from_candid_opt_n20(this._uploadFile, this._downloadFile, result);
     }
   }
   async getICPNews() {
@@ -28198,28 +28336,28 @@ class Backend {
     if (this.processError) {
       try {
         const result = await this.actor.getICPPrice();
-        return from_candid_PriceResponse_n14(this._uploadFile, this._downloadFile, result);
+        return from_candid_PriceResponse_n21(this._uploadFile, this._downloadFile, result);
       } catch (e3) {
         this.processError(e3);
         throw new Error("unreachable");
       }
     } else {
       const result = await this.actor.getICPPrice();
-      return from_candid_PriceResponse_n14(this._uploadFile, this._downloadFile, result);
+      return from_candid_PriceResponse_n21(this._uploadFile, this._downloadFile, result);
     }
   }
   async getICPPriceRaw() {
     if (this.processError) {
       try {
         const result = await this.actor.getICPPriceRaw();
-        return from_candid_PriceResponse_n14(this._uploadFile, this._downloadFile, result);
+        return from_candid_PriceResponse_n21(this._uploadFile, this._downloadFile, result);
       } catch (e3) {
         this.processError(e3);
         throw new Error("unreachable");
       }
     } else {
       const result = await this.actor.getICPPriceRaw();
-      return from_candid_PriceResponse_n14(this._uploadFile, this._downloadFile, result);
+      return from_candid_PriceResponse_n21(this._uploadFile, this._downloadFile, result);
     }
   }
   async getMarketChart(arg0) {
@@ -28254,28 +28392,28 @@ class Backend {
     if (this.processError) {
       try {
         const result = await this.actor.getPortfolioRecord();
-        return from_candid_PortfolioRecord_n16(this._uploadFile, this._downloadFile, result);
+        return from_candid_PortfolioRecord_n23(this._uploadFile, this._downloadFile, result);
       } catch (e3) {
         this.processError(e3);
         throw new Error("unreachable");
       }
     } else {
       const result = await this.actor.getPortfolioRecord();
-      return from_candid_PortfolioRecord_n16(this._uploadFile, this._downloadFile, result);
+      return from_candid_PortfolioRecord_n23(this._uploadFile, this._downloadFile, result);
     }
   }
   async getPublishedAnnouncements() {
     if (this.processError) {
       try {
         const result = await this.actor.getPublishedAnnouncements();
-        return from_candid_vec_n5(this._uploadFile, this._downloadFile, result);
+        return from_candid_vec_n6(this._uploadFile, this._downloadFile, result);
       } catch (e3) {
         this.processError(e3);
         throw new Error("unreachable");
       }
     } else {
       const result = await this.actor.getPublishedAnnouncements();
-      return from_candid_vec_n5(this._uploadFile, this._downloadFile, result);
+      return from_candid_vec_n6(this._uploadFile, this._downloadFile, result);
     }
   }
   async getSocialTrending() {
@@ -28296,14 +28434,14 @@ class Backend {
     if (this.processError) {
       try {
         const result = await this.actor.getUserSettings();
-        return from_candid_UserSettings_n22(this._uploadFile, this._downloadFile, result);
+        return from_candid_UserSettings_n28(this._uploadFile, this._downloadFile, result);
       } catch (e3) {
         this.processError(e3);
         throw new Error("unreachable");
       }
     } else {
       const result = await this.actor.getUserSettings();
-      return from_candid_UserSettings_n22(this._uploadFile, this._downloadFile, result);
+      return from_candid_UserSettings_n28(this._uploadFile, this._downloadFile, result);
     }
   }
   async isCallerAdmin() {
@@ -28318,6 +28456,20 @@ class Backend {
     } else {
       const result = await this.actor.isCallerAdmin();
       return result;
+    }
+  }
+  async postChatMessage(arg0, arg1, arg2, arg3) {
+    if (this.processError) {
+      try {
+        const result = await this.actor.postChatMessage(arg0, to_candid_opt_n31(this._uploadFile, this._downloadFile, arg1), to_candid_opt_n32(this._uploadFile, this._downloadFile, arg2), to_candid_opt_n33(this._uploadFile, this._downloadFile, arg3));
+        return from_candid_variant_n34(this._uploadFile, this._downloadFile, result);
+      } catch (e3) {
+        this.processError(e3);
+        throw new Error("unreachable");
+      }
+    } else {
+      const result = await this.actor.postChatMessage(arg0, to_candid_opt_n31(this._uploadFile, this._downloadFile, arg1), to_candid_opt_n32(this._uploadFile, this._downloadFile, arg2), to_candid_opt_n33(this._uploadFile, this._downloadFile, arg3));
+      return from_candid_variant_n34(this._uploadFile, this._downloadFile, result);
     }
   }
   async saveExecutionRecord(arg0) {
@@ -28337,28 +28489,28 @@ class Backend {
   async savePortfolioRecord(arg0, arg1, arg2) {
     if (this.processError) {
       try {
-        const result = await this.actor.savePortfolioRecord(arg0, arg1, to_candid_vec_n25(this._uploadFile, this._downloadFile, arg2));
+        const result = await this.actor.savePortfolioRecord(arg0, arg1, to_candid_vec_n35(this._uploadFile, this._downloadFile, arg2));
         return result;
       } catch (e3) {
         this.processError(e3);
         throw new Error("unreachable");
       }
     } else {
-      const result = await this.actor.savePortfolioRecord(arg0, arg1, to_candid_vec_n25(this._uploadFile, this._downloadFile, arg2));
+      const result = await this.actor.savePortfolioRecord(arg0, arg1, to_candid_vec_n35(this._uploadFile, this._downloadFile, arg2));
       return result;
     }
   }
   async saveUserSettings(arg0, arg1, arg2, arg3, arg4, arg5, arg6) {
     if (this.processError) {
       try {
-        const result = await this.actor.saveUserSettings(to_candid_opt_n28(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg1), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg2), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg3), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg4), to_candid_opt_n29(this._uploadFile, this._downloadFile, arg5), to_candid_opt_n29(this._uploadFile, this._downloadFile, arg6));
+        const result = await this.actor.saveUserSettings(to_candid_opt_n31(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n31(this._uploadFile, this._downloadFile, arg1), to_candid_opt_n31(this._uploadFile, this._downloadFile, arg2), to_candid_opt_n31(this._uploadFile, this._downloadFile, arg3), to_candid_opt_n31(this._uploadFile, this._downloadFile, arg4), to_candid_opt_n38(this._uploadFile, this._downloadFile, arg5), to_candid_opt_n38(this._uploadFile, this._downloadFile, arg6));
         return result;
       } catch (e3) {
         this.processError(e3);
         throw new Error("unreachable");
       }
     } else {
-      const result = await this.actor.saveUserSettings(to_candid_opt_n28(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg1), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg2), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg3), to_candid_opt_n28(this._uploadFile, this._downloadFile, arg4), to_candid_opt_n29(this._uploadFile, this._downloadFile, arg5), to_candid_opt_n29(this._uploadFile, this._downloadFile, arg6));
+      const result = await this.actor.saveUserSettings(to_candid_opt_n31(this._uploadFile, this._downloadFile, arg0), to_candid_opt_n31(this._uploadFile, this._downloadFile, arg1), to_candid_opt_n31(this._uploadFile, this._downloadFile, arg2), to_candid_opt_n31(this._uploadFile, this._downloadFile, arg3), to_candid_opt_n31(this._uploadFile, this._downloadFile, arg4), to_candid_opt_n38(this._uploadFile, this._downloadFile, arg5), to_candid_opt_n38(this._uploadFile, this._downloadFile, arg6));
       return result;
     }
   }
@@ -28366,14 +28518,14 @@ class Backend {
     if (this.processError) {
       try {
         const result = await this.actor.sendTestEmail();
-        return from_candid_variant_n30(this._uploadFile, this._downloadFile, result);
+        return from_candid_variant_n39(this._uploadFile, this._downloadFile, result);
       } catch (e3) {
         this.processError(e3);
         throw new Error("unreachable");
       }
     } else {
       const result = await this.actor.sendTestEmail();
-      return from_candid_variant_n30(this._uploadFile, this._downloadFile, result);
+      return from_candid_variant_n39(this._uploadFile, this._downloadFile, result);
     }
   }
   async toggleAnnouncementPublished(arg0) {
@@ -28388,6 +28540,34 @@ class Backend {
     } else {
       const result = await this.actor.toggleAnnouncementPublished(arg0);
       return result;
+    }
+  }
+  async toggleChatLike(arg0, arg1) {
+    if (this.processError) {
+      try {
+        const result = await this.actor.toggleChatLike(arg0, arg1);
+        return from_candid_variant_n34(this._uploadFile, this._downloadFile, result);
+      } catch (e3) {
+        this.processError(e3);
+        throw new Error("unreachable");
+      }
+    } else {
+      const result = await this.actor.toggleChatLike(arg0, arg1);
+      return from_candid_variant_n34(this._uploadFile, this._downloadFile, result);
+    }
+  }
+  async toggleChatShill(arg0, arg1) {
+    if (this.processError) {
+      try {
+        const result = await this.actor.toggleChatShill(arg0, arg1);
+        return from_candid_variant_n34(this._uploadFile, this._downloadFile, result);
+      } catch (e3) {
+        this.processError(e3);
+        throw new Error("unreachable");
+      }
+    } else {
+      const result = await this.actor.toggleChatShill(arg0, arg1);
+      return from_candid_variant_n34(this._uploadFile, this._downloadFile, result);
     }
   }
   async transformAdminBalance(arg0) {
@@ -28573,126 +28753,180 @@ class Backend {
     }
   }
 }
-function from_candid_AnnouncementType_n8(_uploadFile, _downloadFile, value) {
-  return from_candid_variant_n9(_uploadFile, _downloadFile, value);
+function from_candid_AnnouncementType_n9(_uploadFile, _downloadFile, value) {
+  return from_candid_variant_n10(_uploadFile, _downloadFile, value);
 }
-function from_candid_Announcement_n6(_uploadFile, _downloadFile, value) {
-  return from_candid_record_n7(_uploadFile, _downloadFile, value);
+function from_candid_Announcement_n7(_uploadFile, _downloadFile, value) {
+  return from_candid_record_n8(_uploadFile, _downloadFile, value);
 }
-function from_candid_PortfolioRecord_n16(_uploadFile, _downloadFile, value) {
-  return from_candid_record_n17(_uploadFile, _downloadFile, value);
+function from_candid_ChatMessage_n14(_uploadFile, _downloadFile, value) {
+  return from_candid_record_n15(_uploadFile, _downloadFile, value);
 }
-function from_candid_PriceResponse_n14(_uploadFile, _downloadFile, value) {
-  return from_candid_variant_n15(_uploadFile, _downloadFile, value);
+function from_candid_PortfolioRecord_n23(_uploadFile, _downloadFile, value) {
+  return from_candid_record_n24(_uploadFile, _downloadFile, value);
 }
-function from_candid_PriceTarget_n19(_uploadFile, _downloadFile, value) {
-  return from_candid_record_n20(_uploadFile, _downloadFile, value);
+function from_candid_PriceResponse_n21(_uploadFile, _downloadFile, value) {
+  return from_candid_variant_n22(_uploadFile, _downloadFile, value);
 }
-function from_candid_UserRole_n10(_uploadFile, _downloadFile, value) {
-  return from_candid_variant_n11(_uploadFile, _downloadFile, value);
+function from_candid_PriceTarget_n26(_uploadFile, _downloadFile, value) {
+  return from_candid_record_n27(_uploadFile, _downloadFile, value);
 }
-function from_candid_UserSettings_n22(_uploadFile, _downloadFile, value) {
-  return from_candid_record_n23(_uploadFile, _downloadFile, value);
+function from_candid_UserRole_n11(_uploadFile, _downloadFile, value) {
+  return from_candid_variant_n12(_uploadFile, _downloadFile, value);
 }
-function from_candid_opt_n12(_uploadFile, _downloadFile, value) {
+function from_candid_UserSettings_n28(_uploadFile, _downloadFile, value) {
+  return from_candid_record_n29(_uploadFile, _downloadFile, value);
+}
+function from_candid_opt_n16(_uploadFile, _downloadFile, value) {
   return value.length === 0 ? null : value[0];
 }
-function from_candid_opt_n13(_uploadFile, _downloadFile, value) {
+function from_candid_opt_n17(_uploadFile, _downloadFile, value) {
   return value.length === 0 ? null : value[0];
 }
-function from_candid_opt_n21(_uploadFile, _downloadFile, value) {
+function from_candid_opt_n18(_uploadFile, _downloadFile, value) {
   return value.length === 0 ? null : value[0];
 }
-function from_candid_opt_n24(_uploadFile, _downloadFile, value) {
+function from_candid_opt_n19(_uploadFile, _downloadFile, value) {
   return value.length === 0 ? null : value[0];
 }
-function from_candid_record_n17(_uploadFile, _downloadFile, value) {
+function from_candid_opt_n20(_uploadFile, _downloadFile, value) {
+  return value.length === 0 ? null : value[0];
+}
+function from_candid_opt_n30(_uploadFile, _downloadFile, value) {
+  return value.length === 0 ? null : value[0];
+}
+function from_candid_record_n15(_uploadFile, _downloadFile, value) {
   return {
-    priceTargets: from_candid_vec_n18(_uploadFile, _downloadFile, value.priceTargets),
+    id: value.id,
+    tab: value.tab,
+    isDeleted: value.isDeleted,
+    content: value.content,
+    shills: value.shills,
+    fuds: value.fuds,
+    authorName: value.authorName,
+    likes: value.likes,
+    imageKey: record_opt_to_undefined(from_candid_opt_n16(_uploadFile, _downloadFile, value.imageKey)),
+    timestamp: value.timestamp,
+    replyToId: record_opt_to_undefined(from_candid_opt_n17(_uploadFile, _downloadFile, value.replyToId)),
+    dislikes: value.dislikes,
+    authorPrincipal: value.authorPrincipal,
+    urlPreview: record_opt_to_undefined(from_candid_opt_n18(_uploadFile, _downloadFile, value.urlPreview))
+  };
+}
+function from_candid_record_n24(_uploadFile, _downloadFile, value) {
+  return {
+    priceTargets: from_candid_vec_n25(_uploadFile, _downloadFile, value.priceTargets),
     investedAmount: value.investedAmount,
     icpAmount: value.icpAmount
   };
 }
-function from_candid_record_n20(_uploadFile, _downloadFile, value) {
+function from_candid_record_n27(_uploadFile, _downloadFile, value) {
   return {
     id: value.id,
     tokensToSell: value.tokensToSell,
     notifyViaPhone: value.notifyViaPhone,
     targetPrice: value.targetPrice,
-    notifyEmail: record_opt_to_undefined(from_candid_opt_n21(_uploadFile, _downloadFile, value.notifyEmail)),
+    notifyEmail: record_opt_to_undefined(from_candid_opt_n16(_uploadFile, _downloadFile, value.notifyEmail)),
     triggered: value.triggered,
     icpAmount: value.icpAmount,
     notifyViaEmail: value.notifyViaEmail
   };
 }
-function from_candid_record_n23(_uploadFile, _downloadFile, value) {
+function from_candid_record_n29(_uploadFile, _downloadFile, value) {
   return {
-    baseCurrency: record_opt_to_undefined(from_candid_opt_n21(_uploadFile, _downloadFile, value.baseCurrency)),
-    theme: record_opt_to_undefined(from_candid_opt_n21(_uploadFile, _downloadFile, value.theme)),
-    notifyPhone: record_opt_to_undefined(from_candid_opt_n24(_uploadFile, _downloadFile, value.notifyPhone)),
-    email: record_opt_to_undefined(from_candid_opt_n21(_uploadFile, _downloadFile, value.email)),
-    language: record_opt_to_undefined(from_candid_opt_n21(_uploadFile, _downloadFile, value.language)),
-    notifyEmail: record_opt_to_undefined(from_candid_opt_n24(_uploadFile, _downloadFile, value.notifyEmail)),
-    phone: record_opt_to_undefined(from_candid_opt_n21(_uploadFile, _downloadFile, value.phone))
+    baseCurrency: record_opt_to_undefined(from_candid_opt_n16(_uploadFile, _downloadFile, value.baseCurrency)),
+    theme: record_opt_to_undefined(from_candid_opt_n16(_uploadFile, _downloadFile, value.theme)),
+    notifyPhone: record_opt_to_undefined(from_candid_opt_n30(_uploadFile, _downloadFile, value.notifyPhone)),
+    email: record_opt_to_undefined(from_candid_opt_n16(_uploadFile, _downloadFile, value.email)),
+    language: record_opt_to_undefined(from_candid_opt_n16(_uploadFile, _downloadFile, value.language)),
+    notifyEmail: record_opt_to_undefined(from_candid_opt_n30(_uploadFile, _downloadFile, value.notifyEmail)),
+    phone: record_opt_to_undefined(from_candid_opt_n16(_uploadFile, _downloadFile, value.phone))
   };
 }
-function from_candid_record_n7(_uploadFile, _downloadFile, value) {
+function from_candid_record_n8(_uploadFile, _downloadFile, value) {
   return {
     id: value.id,
     title: value.title,
-    announcementType: from_candid_AnnouncementType_n8(_uploadFile, _downloadFile, value.announcementType),
+    announcementType: from_candid_AnnouncementType_n9(_uploadFile, _downloadFile, value.announcementType),
     isPublished: value.isPublished,
     body: value.body,
     createdAt: value.createdAt,
     updatedAt: value.updatedAt
   };
 }
-function from_candid_variant_n11(_uploadFile, _downloadFile, value) {
-  return "admin" in value ? "admin" : "user" in value ? "user" : "guest" in value ? "guest" : value;
-}
-function from_candid_variant_n15(_uploadFile, _downloadFile, value) {
-  return "ok" in value ? {
-    __kind__: "ok",
-    ok: value.ok
-  } : "err" in value ? {
-    __kind__: "err",
-    err: value.err
-  } : value;
-}
-function from_candid_variant_n30(_uploadFile, _downloadFile, value) {
-  return "ok" in value ? {
-    __kind__: "ok",
-    ok: value.ok
-  } : "err" in value ? {
-    __kind__: "err",
-    err: value.err
-  } : value;
-}
-function from_candid_variant_n9(_uploadFile, _downloadFile, value) {
+function from_candid_variant_n10(_uploadFile, _downloadFile, value) {
   return "market_tip" in value ? "market_tip" : "system_notice" in value ? "system_notice" : "general" in value ? "general" : value;
 }
-function from_candid_vec_n18(_uploadFile, _downloadFile, value) {
-  return value.map((x3) => from_candid_PriceTarget_n19(_uploadFile, _downloadFile, x3));
+function from_candid_variant_n12(_uploadFile, _downloadFile, value) {
+  return "admin" in value ? "admin" : "user" in value ? "user" : "guest" in value ? "guest" : value;
 }
-function from_candid_vec_n5(_uploadFile, _downloadFile, value) {
-  return value.map((x3) => from_candid_Announcement_n6(_uploadFile, _downloadFile, x3));
+function from_candid_variant_n22(_uploadFile, _downloadFile, value) {
+  return "ok" in value ? {
+    __kind__: "ok",
+    ok: value.ok
+  } : "err" in value ? {
+    __kind__: "err",
+    err: value.err
+  } : value;
+}
+function from_candid_variant_n34(_uploadFile, _downloadFile, value) {
+  return "ok" in value ? {
+    __kind__: "ok",
+    ok: from_candid_ChatMessage_n14(_uploadFile, _downloadFile, value.ok)
+  } : "err" in value ? {
+    __kind__: "err",
+    err: value.err
+  } : value;
+}
+function from_candid_variant_n39(_uploadFile, _downloadFile, value) {
+  return "ok" in value ? {
+    __kind__: "ok",
+    ok: value.ok
+  } : "err" in value ? {
+    __kind__: "err",
+    err: value.err
+  } : value;
+}
+function from_candid_variant_n5(_uploadFile, _downloadFile, value) {
+  return "ok" in value ? {
+    __kind__: "ok",
+    ok: value.ok
+  } : "err" in value ? {
+    __kind__: "err",
+    err: value.err
+  } : value;
+}
+function from_candid_vec_n13(_uploadFile, _downloadFile, value) {
+  return value.map((x3) => from_candid_ChatMessage_n14(_uploadFile, _downloadFile, x3));
+}
+function from_candid_vec_n25(_uploadFile, _downloadFile, value) {
+  return value.map((x3) => from_candid_PriceTarget_n26(_uploadFile, _downloadFile, x3));
+}
+function from_candid_vec_n6(_uploadFile, _downloadFile, value) {
+  return value.map((x3) => from_candid_Announcement_n7(_uploadFile, _downloadFile, x3));
 }
 function to_candid_AnnouncementType_n3(_uploadFile, _downloadFile, value) {
   return to_candid_variant_n4(_uploadFile, _downloadFile, value);
 }
-function to_candid_PriceTarget_n26(_uploadFile, _downloadFile, value) {
-  return to_candid_record_n27(_uploadFile, _downloadFile, value);
+function to_candid_PriceTarget_n36(_uploadFile, _downloadFile, value) {
+  return to_candid_record_n37(_uploadFile, _downloadFile, value);
 }
 function to_candid_UserRole_n1(_uploadFile, _downloadFile, value) {
   return to_candid_variant_n2(_uploadFile, _downloadFile, value);
 }
-function to_candid_opt_n28(_uploadFile, _downloadFile, value) {
+function to_candid_opt_n31(_uploadFile, _downloadFile, value) {
   return value === null ? candid_none() : candid_some(value);
 }
-function to_candid_opt_n29(_uploadFile, _downloadFile, value) {
+function to_candid_opt_n32(_uploadFile, _downloadFile, value) {
   return value === null ? candid_none() : candid_some(value);
 }
-function to_candid_record_n27(_uploadFile, _downloadFile, value) {
+function to_candid_opt_n33(_uploadFile, _downloadFile, value) {
+  return value === null ? candid_none() : candid_some(value);
+}
+function to_candid_opt_n38(_uploadFile, _downloadFile, value) {
+  return value === null ? candid_none() : candid_some(value);
+}
+function to_candid_record_n37(_uploadFile, _downloadFile, value) {
   return {
     id: value.id,
     tokensToSell: value.tokensToSell,
@@ -28722,8 +28956,8 @@ function to_candid_variant_n4(_uploadFile, _downloadFile, value) {
     general: null
   } : value;
 }
-function to_candid_vec_n25(_uploadFile, _downloadFile, value) {
-  return value.map((x3) => to_candid_PriceTarget_n26(_uploadFile, _downloadFile, x3));
+function to_candid_vec_n35(_uploadFile, _downloadFile, value) {
+  return value.map((x3) => to_candid_PriceTarget_n36(_uploadFile, _downloadFile, x3));
 }
 function createActor(canisterId, _uploadFile, _downloadFile, options = {}) {
   const agent = options.agent || HttpAgent.createSync({
@@ -28741,7 +28975,7 @@ function createActor(canisterId, _uploadFile, _downloadFile, options = {}) {
 }
 const translations = {
   en: {
-    appTitle: "ICP Value Tracker",
+    appTitle: "ICP Pulse",
     valueTracker: "Value Tracker",
     exitStrategy: "Exit Strategy",
     icpNews: "ICP News",
@@ -28818,7 +29052,7 @@ const translations = {
     notificationInfo: "Your contact details are used for price-target notifications on the Exit Strategy tab.",
     currencyInfo: "All monetary values convert to this currency using live rates.",
     refreshInfo: "How often live prices and data auto-refresh.",
-    aboutTitle: "About ICP Value Tracker",
+    aboutTitle: "About ICP Pulse",
     donationAddress: "Donation Address",
     aboutDescription: "Support this app by donating ICP to keep it running.",
     adminPanel: "Admin Panel",
@@ -28831,7 +29065,7 @@ const translations = {
     connectWallet: "Connect Wallet"
   },
   es: {
-    appTitle: "Rastreador ICP",
+    appTitle: "ICP Pulse",
     valueTracker: "Rastreador de Valor",
     exitStrategy: "Estrategia de Salida",
     icpNews: "Noticias ICP",
@@ -28908,7 +29142,7 @@ const translations = {
     notificationInfo: "Tus datos se usan para notificaciones de objetivos de precio.",
     currencyInfo: "Todos los valores se convierten a esta moneda con tasas en vivo.",
     refreshInfo: "Con qué frecuencia se actualizan automáticamente los precios.",
-    aboutTitle: "Acerca del Rastreador ICP",
+    aboutTitle: "Acerca de ICP Pulse",
     donationAddress: "Dirección de donación",
     aboutDescription: "Apoya esta app donando ICP para mantenerla activa.",
     adminPanel: "Panel de administrador",
@@ -28921,7 +29155,7 @@ const translations = {
     connectWallet: "Conectar billetera"
   },
   fr: {
-    appTitle: "Suivi ICP",
+    appTitle: "ICP Pulse",
     valueTracker: "Suivi de valeur",
     exitStrategy: "Stratégie de sortie",
     icpNews: "Actualités ICP",
@@ -28998,7 +29232,7 @@ const translations = {
     notificationInfo: "Vos coordonnées sont utilisées pour les notifications de prix.",
     currencyInfo: "Toutes les valeurs sont converties dans cette devise.",
     refreshInfo: "Fréquence de rafraîchissement automatique des données.",
-    aboutTitle: "À propos du Suivi ICP",
+    aboutTitle: "À propos d'ICP Pulse",
     donationAddress: "Adresse de don",
     aboutDescription: "Soutenez cette app en faisant un don ICP.",
     adminPanel: "Panneau d'administration",
@@ -29011,7 +29245,7 @@ const translations = {
     connectWallet: "Connecter le portefeuille"
   },
   de: {
-    appTitle: "ICP Wert-Tracker",
+    appTitle: "ICP Pulse",
     valueTracker: "Wert-Tracker",
     exitStrategy: "Ausstiegsstrategie",
     icpNews: "ICP Nachrichten",
@@ -29088,7 +29322,7 @@ const translations = {
     notificationInfo: "Kontaktdaten werden für Preisziel-Benachrichtigungen genutzt.",
     currencyInfo: "Alle Werte werden mit Live-Kursen in diese Währung umgerechnet.",
     refreshInfo: "Wie oft Preise und Daten automatisch aktualisiert werden.",
-    aboutTitle: "Über den ICP Wert-Tracker",
+    aboutTitle: "Über ICP Pulse",
     donationAddress: "Spendenadresse",
     aboutDescription: "Unterstütze diese App mit einer ICP-Spende.",
     adminPanel: "Admin-Panel",
@@ -29101,7 +29335,7 @@ const translations = {
     connectWallet: "Wallet verbinden"
   },
   zh: {
-    appTitle: "ICP 价值追踪器",
+    appTitle: "ICP Pulse",
     valueTracker: "价值追踪",
     exitStrategy: "退出策略",
     icpNews: "ICP 新闻",
@@ -29178,7 +29412,7 @@ const translations = {
     notificationInfo: "您的联系方式用于退出策略标签的价格目标通知。",
     currencyInfo: "所有货币价值将使用实时汇率转换为此货币。",
     refreshInfo: "实时价格和数据自动刷新的频率。",
-    aboutTitle: "关于 ICP 价值追踪器",
+    aboutTitle: "关于 ICP Pulse",
     donationAddress: "捐款地址",
     aboutDescription: "通过捐赠 ICP 来支持此应用的运营。",
     adminPanel: "管理面板",
@@ -29191,7 +29425,7 @@ const translations = {
     connectWallet: "连接钱包"
   },
   ja: {
-    appTitle: "ICP バリュートラッカー",
+    appTitle: "ICP Pulse",
     valueTracker: "バリュートラッカー",
     exitStrategy: "出口戦略",
     icpNews: "ICP ニュース",
@@ -29268,7 +29502,7 @@ const translations = {
     notificationInfo: "連絡先は出口戦略タブの価格目標通知に使用されます。",
     currencyInfo: "すべての金額はライブレートでこの通貨に変換されます。",
     refreshInfo: "ライブ価格とデータの自動更新頻度。",
-    aboutTitle: "ICP バリュートラッカーについて",
+    aboutTitle: "ICP Pulseについて",
     donationAddress: "寄付アドレス",
     aboutDescription: "ICP を寄付してこのアプリの運営をサポートしてください。",
     adminPanel: "管理パネル",
@@ -29281,7 +29515,7 @@ const translations = {
     connectWallet: "ウォレットを接続"
   },
   pt: {
-    appTitle: "Rastreador ICP",
+    appTitle: "ICP Pulse",
     valueTracker: "Rastreador de Valor",
     exitStrategy: "Estratégia de Saída",
     icpNews: "Notícias ICP",
@@ -29358,7 +29592,7 @@ const translations = {
     notificationInfo: "Seus dados de contato são usados para notificações de metas de preço.",
     currencyInfo: "Todos os valores são convertidos para esta moeda com taxas ao vivo.",
     refreshInfo: "Com que frequência os preços e dados são atualizados automaticamente.",
-    aboutTitle: "Sobre o Rastreador ICP",
+    aboutTitle: "Sobre o ICP Pulse",
     donationAddress: "Endereço de doação",
     aboutDescription: "Apoie este app doando ICP para mantê-lo ativo.",
     adminPanel: "Painel de administração",
@@ -29427,62 +29661,84 @@ const FALLBACK_DONATION_ADDRESS = "b089c3ed099d1c3501c06fd6855c2152fb542b01e8588
 function useBackendActor() {
   const { identity: identity3 } = useInternetIdentity();
   const identityKey = (identity3 == null ? void 0 : identity3.getPrincipal().toString()) ?? "anon";
+  const identityRef = reactExports.useRef(identity3);
+  identityRef.current = identity3;
   const [state, setState] = reactExports.useState({ actor: null, isReady: false });
   const builtForRef = reactExports.useRef(null);
+  const initRunningRef = reactExports.useRef(false);
   reactExports.useEffect(() => {
-    if (builtForRef.current === identityKey && state.actor !== null) return;
+    if (builtForRef.current === identityKey && !initRunningRef.current) {
+      return;
+    }
+    if (builtForRef.current !== identityKey) {
+      builtForRef.current = null;
+      setState({ actor: null, isReady: false });
+      console.log("[ACTOR INIT] identity changed, resetting actor", {
+        identityKey
+      });
+    }
     let cancelled = false;
-    setState((prev) => ({ ...prev, isReady: false }));
-    async function tryInit() {
-      const maxAttempts = 30;
-      let attempts = 0;
-      while (attempts < maxAttempts && !cancelled) {
-        attempts++;
-        try {
-          const envRes = await fetch(`/env.json?_=${Date.now()}`);
-          const env = await envRes.json();
-          const canisterId = env.backend_canister_id || env.CANISTER_ID_BACKEND || env.canister_id_backend || "";
-          if (!canisterId || canisterId === "" || canisterId === "undefined") {
-            console.log(
-              `[ACTOR INIT] attempt ${attempts}/${maxAttempts}: canisterId empty, retrying in 1s...`
-            );
-            await new Promise((r2) => setTimeout(r2, 1e3));
-            continue;
-          }
-          console.log(
-            `[ACTOR INIT] attempt ${attempts}: got canisterId ${canisterId}, creating actor...`,
-            { identityKey, hasIdentity: !!identity3 }
+    initRunningRef.current = true;
+    async function tryInit(attempt = 1, maxAttempts = 30) {
+      if (cancelled) return;
+      try {
+        const envRes = await fetch(`/env.json?_=${Date.now()}`);
+        const env = await envRes.json();
+        const canisterId = env.backend_canister_id || env.CANISTER_ID_BACKEND || env.canister_id_backend || "";
+        if (!canisterId || canisterId === "" || canisterId === "undefined") {
+          console.warn(
+            `[ACTOR INIT] attempt ${attempt}/${maxAttempts}: canisterId empty, retrying in 1s…`
           );
-          const actorOptions = identity3 ? { agentOptions: { identity: identity3 } } : void 0;
-          const newActor = await createActorWithConfig(
-            createActor,
-            actorOptions
-          );
-          console.log("[ACTOR INIT] actor created successfully", {
-            actor: !!newActor
-          });
           if (!cancelled) {
-            builtForRef.current = identityKey;
-            setState({ actor: newActor, isReady: true });
+            await new Promise((r2) => setTimeout(r2, 1e3));
+            return tryInit(attempt + 1, maxAttempts);
           }
           return;
-        } catch (err) {
-          console.error(`[ACTOR INIT] attempt ${attempts} failed:`, err);
-          if (attempts < maxAttempts && !cancelled) {
-            await new Promise((r2) => setTimeout(r2, 1e3));
-          }
         }
-      }
-      if (!cancelled) {
-        console.error(
-          "[ACTOR INIT] exhausted all attempts — actor remains null"
+        const currentIdentity = identityRef.current;
+        console.log(
+          `[ACTOR INIT] attempt ${attempt}: canisterId ${canisterId}, creating actor…`,
+          { identityKey, hasIdentity: !!currentIdentity }
         );
+        const actorOptions = currentIdentity ? { agentOptions: { identity: currentIdentity } } : void 0;
+        const newActor = await createActorWithConfig(createActor, actorOptions);
+        console.log("[ACTOR INIT] actor created successfully", {
+          actor: !!newActor,
+          identityKey
+        });
+        if (!cancelled) {
+          builtForRef.current = identityKey;
+          initRunningRef.current = false;
+          setState({ actor: newActor, isReady: true });
+        }
+        return;
+      } catch (err) {
+        console.error(`[ACTOR INIT] attempt ${attempt} failed:`, err);
+        if (cancelled) return;
+        if (attempt < maxAttempts) {
+          await new Promise((r2) => setTimeout(r2, 1e3));
+          return tryInit(attempt + 1, maxAttempts);
+        }
+        console.error(
+          "[ACTOR INIT] exhausted all attempts — setting isReady with null actor. Will retry in 10s."
+        );
+        initRunningRef.current = false;
         setState({ actor: null, isReady: true });
+        setTimeout(() => {
+          if (!cancelled) {
+            console.warn("[ACTOR INIT] recovery retry — resetting builtForRef");
+            builtForRef.current = null;
+            setState({ actor: null, isReady: false });
+            initRunningRef.current = true;
+            tryInit(1, maxAttempts);
+          }
+        }, 1e4);
       }
     }
     tryInit();
     return () => {
       cancelled = true;
+      initRunningRef.current = false;
     };
   }, [identityKey]);
   return state;
@@ -29490,6 +29746,57 @@ function useBackendActor() {
 function isCanisterStoppedError(e3) {
   const msg = e3 instanceof Error ? e3.message : String(e3);
   return msg.includes("IC0508") || msg.includes("canister stopped") || msg.includes("reject_code: 5");
+}
+const _canisterStatusListeners = /* @__PURE__ */ new Set();
+let _isCanisterStopped = false;
+function notifyCanisterStopped(stopped) {
+  if (_isCanisterStopped === stopped) return;
+  _isCanisterStopped = stopped;
+  for (const listener of _canisterStatusListeners) listener(stopped);
+}
+function reportCanisterStopped() {
+  notifyCanisterStopped(true);
+}
+function reportCanisterOnline() {
+  notifyCanisterStopped(false);
+}
+function useCanisterStopped() {
+  const [stopped, setStopped] = reactExports.useState(_isCanisterStopped);
+  reactExports.useEffect(() => {
+    const listener = (s2) => setStopped(s2);
+    _canisterStatusListeners.add(listener);
+    setStopped(_isCanisterStopped);
+    return () => {
+      _canisterStatusListeners.delete(listener);
+    };
+  }, []);
+  return stopped;
+}
+function useCyclesBalance() {
+  const { actor, isReady } = useBackendActor();
+  const { identity: identity3 } = useInternetIdentity();
+  const principal = (identity3 == null ? void 0 : identity3.getPrincipal().toString()) ?? null;
+  return useQuery({
+    queryKey: ["cyclesBalance", principal],
+    queryFn: async () => {
+      if (!actor) return null;
+      try {
+        const balance = await actor.getCyclesBalance();
+        return balance;
+      } catch (e3) {
+        if (isCanisterStoppedError(e3)) {
+          console.warn("[CYCLES] canister stopped — returning null");
+          return null;
+        }
+        console.error("[CYCLES] getCyclesBalance error", e3);
+        return null;
+      }
+    },
+    enabled: isReady && !!actor,
+    refetchInterval: 6e4,
+    staleTime: 55e3,
+    retry: 1
+  });
 }
 let _lastKnownPrice = null;
 function useICPPrice(refetchInterval = 6e4) {
@@ -29527,6 +29834,7 @@ function useICPPrice(refetchInterval = 6e4) {
             fetchedAt: (_a3 = result.ok.fetchedAt) == null ? void 0 : _a3.toString()
           });
           _lastKnownPrice = result.ok;
+          reportCanisterOnline();
           return result.ok;
         }
         console.error("[QUERY ERROR] useICPPrice — backend returned err kind", {
@@ -29542,6 +29850,7 @@ function useICPPrice(refetchInterval = 6e4) {
           console.warn(
             "[QUERY WARN] useICPPrice — canister stopped, returning last known price"
           );
+          reportCanisterStopped();
           return _lastKnownPrice;
         }
         const msg = e3 instanceof Error ? e3.message : String(e3);
@@ -29680,10 +29989,16 @@ function useMarketHistory(refetchInterval = 6e4) {
   });
 }
 function usePortfolioRecord(refetchInterval = 6e4) {
-  const { actor } = useBackendActor();
+  const { actor, isReady } = useBackendActor();
   const { identity: identity3 } = useInternetIdentity();
   const principal = (identity3 == null ? void 0 : identity3.getPrincipal().toString()) ?? null;
-  const enabled = !!actor;
+  const enabled = isReady && !!actor;
+  console.log("[PORTFOLIO] usePortfolioRecord", {
+    actor: !!actor,
+    isReady,
+    enabled,
+    principal
+  });
   return useQuery({
     queryKey: ["portfolioRecord", principal],
     queryFn: async () => {
@@ -29695,10 +30010,12 @@ function usePortfolioRecord(refetchInterval = 6e4) {
           investedAmount: record.investedAmount,
           priceTargetsCount: record.priceTargets.length
         });
+        reportCanisterOnline();
         return record;
       } catch (e3) {
         if (isCanisterStoppedError(e3)) {
           console.warn("[PORTFOLIO] canister stopped, returning safe defaults");
+          reportCanisterStopped();
           return { icpAmount: 0, investedAmount: 0, priceTargets: [] };
         }
         console.error("[PORTFOLIO] load error", {
@@ -29834,14 +30151,15 @@ function useSavePriceTargets() {
   });
 }
 function useUserSettings(refetchInterval = 6e4) {
-  const { actor } = useBackendActor();
+  const { actor, isReady } = useBackendActor();
   const { identity: identity3 } = useInternetIdentity();
   const principal = (identity3 == null ? void 0 : identity3.getPrincipal().toString()) ?? null;
-  const enabled = !!actor;
-  console.log("[ACTOR] useUserSettings", {
+  const enabled = isReady && !!actor;
+  console.log("[SETTINGS] useUserSettings", {
     actor: !!actor,
-    principal,
-    enabled
+    isReady,
+    enabled,
+    principal
   });
   const DEFAULT_SETTINGS = {
     email: void 0,
@@ -29867,10 +30185,12 @@ function useUserSettings(refetchInterval = 6e4) {
         if (result.language) {
           setLanguage(result.language);
         }
+        reportCanisterOnline();
         return result;
       } catch (e3) {
         if (isCanisterStoppedError(e3)) {
           console.warn("[SETTINGS] canister stopped, returning defaults");
+          reportCanisterStopped();
           return DEFAULT_SETTINGS;
         }
         console.error("[SETTINGS] load error", {
@@ -29943,7 +30263,9 @@ function useSaveUserSettings() {
       phone,
       theme,
       baseCurrency,
-      language
+      language,
+      notifyEmail,
+      notifyPhone
     }) => {
       if (!actor)
         throw new Error("Backend not ready — please wait and try again");
@@ -29953,12 +30275,16 @@ function useSaveUserSettings() {
       const resolvedTheme = theme !== void 0 ? theme ?? null : (cached == null ? void 0 : cached.theme) ?? null;
       const resolvedCurrency = baseCurrency !== void 0 ? baseCurrency ?? null : (cached == null ? void 0 : cached.baseCurrency) ?? null;
       const resolvedLanguage = language !== void 0 ? language ?? null : (cached == null ? void 0 : cached.language) ?? null;
+      const resolvedNotifyEmail = notifyEmail !== void 0 ? notifyEmail ?? null : (cached == null ? void 0 : cached.notifyEmail) ?? null;
+      const resolvedNotifyPhone = notifyPhone !== void 0 ? notifyPhone ?? null : (cached == null ? void 0 : cached.notifyPhone) ?? null;
       return actor.saveUserSettings(
         resolvedEmail,
         resolvedPhone,
         resolvedTheme,
         resolvedCurrency,
-        resolvedLanguage
+        resolvedLanguage,
+        resolvedNotifyEmail,
+        resolvedNotifyPhone
       );
     },
     onSuccess: () => {
@@ -30451,6 +30777,111 @@ function useSendTestEmail() {
     }
   });
 }
+function useChatMessages(limit = 20, offset2 = 0) {
+  const { actor, isReady } = useBackendActor();
+  console.log("[CHAT] useChatMessages", {
+    actor: !!actor,
+    isReady,
+    limit,
+    offset: offset2
+  });
+  return useQuery({
+    queryKey: ["chatMessages", limit, offset2],
+    queryFn: async () => {
+      console.log("[CHAT] fetching messages", { limit, offset: offset2 });
+      if (!actor) {
+        console.log("[CHAT] actor not ready, returning []");
+        return [];
+      }
+      const result = await actor.getChatMessages(BigInt(limit), BigInt(offset2));
+      console.log("[CHAT] fetched", result.length, "messages");
+      return result;
+    },
+    enabled: isReady && !!actor,
+    refetchInterval: 15e3,
+    staleTime: 1e4,
+    placeholderData: (prev) => prev ?? []
+  });
+}
+function usePostChatMessage() {
+  const { actor } = useBackendActor();
+  const queryClient2 = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      content,
+      imageKey,
+      replyToId,
+      urlPreview
+    }) => {
+      if (!actor)
+        throw new Error("Backend not ready — please wait and try again");
+      const result = await actor.postChatMessage(
+        content,
+        imageKey,
+        replyToId,
+        urlPreview ?? null
+      );
+      if (result.__kind__ === "err") throw new Error(result.err);
+      return result.ok;
+    },
+    onSuccess: () => {
+      queryClient2.invalidateQueries({ queryKey: ["chatMessages"] });
+    }
+  });
+}
+function useToggleChatLike() {
+  const { actor } = useBackendActor();
+  const queryClient2 = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      messageId,
+      isLike
+    }) => {
+      if (!actor)
+        throw new Error("Backend not ready — please wait and try again");
+      const result = await actor.toggleChatLike(messageId, isLike);
+      if (result.__kind__ === "err") throw new Error(result.err);
+      return result.ok;
+    },
+    onSuccess: () => {
+      queryClient2.invalidateQueries({ queryKey: ["chatMessages"] });
+    }
+  });
+}
+function useDeleteChatMessage() {
+  const { actor } = useBackendActor();
+  const queryClient2 = useQueryClient();
+  return useMutation({
+    mutationFn: async (messageId) => {
+      if (!actor)
+        throw new Error("Backend not ready — please wait and try again");
+      const result = await actor.deleteChatMessage(messageId);
+      if (result.__kind__ === "err") throw new Error(result.err);
+    },
+    onSuccess: () => {
+      queryClient2.invalidateQueries({ queryKey: ["chatMessages"] });
+    }
+  });
+}
+function useToggleChatShill() {
+  const { actor } = useBackendActor();
+  const queryClient2 = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      messageId,
+      isShill
+    }) => {
+      if (!actor)
+        throw new Error("Backend not ready — please wait and try again");
+      const result = await actor.toggleChatShill(messageId, isShill);
+      if (result.__kind__ === "err") throw new Error(result.err);
+      return result.ok;
+    },
+    onSuccess: () => {
+      queryClient2.invalidateQueries({ queryKey: ["chatMessages"] });
+    }
+  });
+}
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -30556,7 +30987,7 @@ const createLucideIcon = (iconName, iconNode) => {
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$u = [
+const __iconNode$B = [
   [
     "path",
     {
@@ -30565,36 +30996,36 @@ const __iconNode$u = [
     }
   ]
 ];
-const Activity = createLucideIcon("activity", __iconNode$u);
+const Activity = createLucideIcon("activity", __iconNode$B);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$t = [
+const __iconNode$A = [
   ["path", { d: "M12 5v14", key: "s699le" }],
   ["path", { d: "m19 12-7 7-7-7", key: "1idqje" }]
 ];
-const ArrowDown = createLucideIcon("arrow-down", __iconNode$t);
+const ArrowDown = createLucideIcon("arrow-down", __iconNode$A);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$s = [
+const __iconNode$z = [
   ["path", { d: "m5 12 7-7 7 7", key: "hav0vg" }],
   ["path", { d: "M12 19V5", key: "x0mq9r" }]
 ];
-const ArrowUp = createLucideIcon("arrow-up", __iconNode$s);
+const ArrowUp = createLucideIcon("arrow-up", __iconNode$z);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$r = [
+const __iconNode$y = [
   ["path", { d: "M10.268 21a2 2 0 0 0 3.464 0", key: "vwvbt9" }],
   [
     "path",
@@ -30604,83 +31035,83 @@ const __iconNode$r = [
     }
   ]
 ];
-const Bell = createLucideIcon("bell", __iconNode$r);
+const Bell = createLucideIcon("bell", __iconNode$y);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$q = [["path", { d: "M20 6 9 17l-5-5", key: "1gmf2c" }]];
-const Check = createLucideIcon("check", __iconNode$q);
+const __iconNode$x = [["path", { d: "M20 6 9 17l-5-5", key: "1gmf2c" }]];
+const Check = createLucideIcon("check", __iconNode$x);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$p = [["path", { d: "m6 9 6 6 6-6", key: "qrunsl" }]];
-const ChevronDown = createLucideIcon("chevron-down", __iconNode$p);
+const __iconNode$w = [["path", { d: "m6 9 6 6 6-6", key: "qrunsl" }]];
+const ChevronDown = createLucideIcon("chevron-down", __iconNode$w);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$o = [["path", { d: "m18 15-6-6-6 6", key: "153udz" }]];
-const ChevronUp = createLucideIcon("chevron-up", __iconNode$o);
+const __iconNode$v = [["path", { d: "m18 15-6-6-6 6", key: "153udz" }]];
+const ChevronUp = createLucideIcon("chevron-up", __iconNode$v);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$n = [
+const __iconNode$u = [
   ["path", { d: "M21.801 10A10 10 0 1 1 17 3.335", key: "yps3ct" }],
   ["path", { d: "m9 11 3 3L22 4", key: "1pflzl" }]
 ];
-const CircleCheckBig = createLucideIcon("circle-check-big", __iconNode$n);
+const CircleCheckBig = createLucideIcon("circle-check-big", __iconNode$u);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$m = [
+const __iconNode$t = [
   ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
   ["path", { d: "m9 12 2 2 4-4", key: "dzmm74" }]
 ];
-const CircleCheck = createLucideIcon("circle-check", __iconNode$m);
+const CircleCheck = createLucideIcon("circle-check", __iconNode$t);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$l = [
+const __iconNode$s = [
   ["rect", { width: "14", height: "14", x: "8", y: "8", rx: "2", ry: "2", key: "17jyea" }],
   ["path", { d: "M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2", key: "zix9uf" }]
 ];
-const Copy = createLucideIcon("copy", __iconNode$l);
+const Copy = createLucideIcon("copy", __iconNode$s);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$k = [
+const __iconNode$r = [
   ["path", { d: "M15 3h6v6", key: "1q9fwt" }],
   ["path", { d: "M10 14 21 3", key: "gplh6r" }],
   ["path", { d: "M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6", key: "a6xqqp" }]
 ];
-const ExternalLink = createLucideIcon("external-link", __iconNode$k);
+const ExternalLink = createLucideIcon("external-link", __iconNode$r);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$j = [
+const __iconNode$q = [
   [
     "path",
     {
@@ -30698,14 +31129,14 @@ const __iconNode$j = [
   ],
   ["path", { d: "m2 2 20 20", key: "1ooewy" }]
 ];
-const EyeOff = createLucideIcon("eye-off", __iconNode$j);
+const EyeOff = createLucideIcon("eye-off", __iconNode$q);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$i = [
+const __iconNode$p = [
   [
     "path",
     {
@@ -30715,14 +31146,14 @@ const __iconNode$i = [
   ],
   ["circle", { cx: "12", cy: "12", r: "3", key: "1v7zrd" }]
 ];
-const Eye = createLucideIcon("eye", __iconNode$i);
+const Eye = createLucideIcon("eye", __iconNode$p);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$h = [
+const __iconNode$o = [
   [
     "path",
     {
@@ -30731,7 +31162,81 @@ const __iconNode$h = [
     }
   ]
 ];
-const Heart = createLucideIcon("heart", __iconNode$h);
+const Heart = createLucideIcon("heart", __iconNode$o);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$n = [
+  ["rect", { width: "18", height: "18", x: "3", y: "3", rx: "2", ry: "2", key: "1m3agn" }],
+  ["circle", { cx: "9", cy: "9", r: "2", key: "af1f0g" }],
+  ["path", { d: "m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21", key: "1xmnt7" }]
+];
+const Image = createLucideIcon("image", __iconNode$n);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$m = [
+  ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
+  ["path", { d: "M12 16v-4", key: "1dtifu" }],
+  ["path", { d: "M12 8h.01", key: "e9boi3" }]
+];
+const Info = createLucideIcon("info", __iconNode$m);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$l = [["path", { d: "M21 12a9 9 0 1 1-6.219-8.56", key: "13zald" }]];
+const LoaderCircle = createLucideIcon("loader-circle", __iconNode$l);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$k = [
+  ["path", { d: "m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7", key: "132q7q" }],
+  ["rect", { x: "2", y: "4", width: "20", height: "16", rx: "2", key: "izxlao" }]
+];
+const Mail = createLucideIcon("mail", __iconNode$k);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$j = [
+  ["path", { d: "m3 11 18-5v12L3 14v-3z", key: "n962bs" }],
+  ["path", { d: "M11.6 16.8a3 3 0 1 1-5.8-1.6", key: "1yl0tm" }]
+];
+const Megaphone = createLucideIcon("megaphone", __iconNode$j);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$i = [
+  ["path", { d: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z", key: "1lielz" }]
+];
+const MessageSquare = createLucideIcon("message-square", __iconNode$i);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$h = [
+  ["path", { d: "M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z", key: "a7tn18" }]
+];
+const Moon = createLucideIcon("moon", __iconNode$h);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -30739,60 +31244,6 @@ const Heart = createLucideIcon("heart", __iconNode$h);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$g = [
-  ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
-  ["path", { d: "M12 16v-4", key: "1dtifu" }],
-  ["path", { d: "M12 8h.01", key: "e9boi3" }]
-];
-const Info = createLucideIcon("info", __iconNode$g);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$f = [
-  ["path", { d: "m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7", key: "132q7q" }],
-  ["rect", { x: "2", y: "4", width: "20", height: "16", rx: "2", key: "izxlao" }]
-];
-const Mail = createLucideIcon("mail", __iconNode$f);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$e = [
-  ["path", { d: "m3 11 18-5v12L3 14v-3z", key: "n962bs" }],
-  ["path", { d: "M11.6 16.8a3 3 0 1 1-5.8-1.6", key: "1yl0tm" }]
-];
-const Megaphone = createLucideIcon("megaphone", __iconNode$e);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$d = [
-  ["path", { d: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z", key: "1lielz" }]
-];
-const MessageSquare = createLucideIcon("message-square", __iconNode$d);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$c = [
-  ["path", { d: "M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z", key: "a7tn18" }]
-];
-const Moon = createLucideIcon("moon", __iconNode$c);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$b = [
   ["path", { d: "M15 18h-5", key: "95g1m2" }],
   ["path", { d: "M18 14h-8", key: "sponae" }],
   [
@@ -30804,7 +31255,83 @@ const __iconNode$b = [
   ],
   ["rect", { width: "8", height: "4", x: "10", y: "6", rx: "1", key: "aywv1n" }]
 ];
-const Newspaper = createLucideIcon("newspaper", __iconNode$b);
+const Newspaper = createLucideIcon("newspaper", __iconNode$g);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$f = [
+  [
+    "path",
+    {
+      d: "M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z",
+      key: "1a8usu"
+    }
+  ]
+];
+const Pen = createLucideIcon("pen", __iconNode$f);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$e = [
+  ["path", { d: "M5 12h14", key: "1ays0h" }],
+  ["path", { d: "M12 5v14", key: "s699le" }]
+];
+const Plus = createLucideIcon("plus", __iconNode$e);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$d = [
+  ["path", { d: "M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8", key: "v9h5vc" }],
+  ["path", { d: "M21 3v5h-5", key: "1q7to0" }],
+  ["path", { d: "M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16", key: "3uifl3" }],
+  ["path", { d: "M8 16H3v5", key: "1cv678" }]
+];
+const RefreshCw = createLucideIcon("refresh-cw", __iconNode$d);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$c = [
+  ["path", { d: "M20 18v-2a4 4 0 0 0-4-4H4", key: "5vmcpk" }],
+  ["path", { d: "m9 17-5-5 5-5", key: "nvlc11" }]
+];
+const Reply = createLucideIcon("reply", __iconNode$c);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$b = [
+  [
+    "path",
+    {
+      d: "M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z",
+      key: "m3kijz"
+    }
+  ],
+  [
+    "path",
+    {
+      d: "m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z",
+      key: "1fmvmk"
+    }
+  ],
+  ["path", { d: "M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0", key: "1f8sc4" }],
+  ["path", { d: "M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5", key: "qeys4" }]
+];
+const Rocket = createLucideIcon("rocket", __iconNode$b);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -30815,12 +31342,13 @@ const __iconNode$a = [
   [
     "path",
     {
-      d: "M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z",
-      key: "1a8usu"
+      d: "M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z",
+      key: "1ffxy3"
     }
-  ]
+  ],
+  ["path", { d: "m21.854 2.147-10.94 10.939", key: "12cjpa" }]
 ];
-const Pen = createLucideIcon("pen", __iconNode$a);
+const Send = createLucideIcon("send", __iconNode$a);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -30828,48 +31356,6 @@ const Pen = createLucideIcon("pen", __iconNode$a);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$9 = [
-  ["path", { d: "M5 12h14", key: "1ays0h" }],
-  ["path", { d: "M12 5v14", key: "s699le" }]
-];
-const Plus = createLucideIcon("plus", __iconNode$9);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$8 = [
-  ["path", { d: "M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8", key: "v9h5vc" }],
-  ["path", { d: "M21 3v5h-5", key: "1q7to0" }],
-  ["path", { d: "M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16", key: "3uifl3" }],
-  ["path", { d: "M8 16H3v5", key: "1cv678" }]
-];
-const RefreshCw = createLucideIcon("refresh-cw", __iconNode$8);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$7 = [
-  [
-    "path",
-    {
-      d: "M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z",
-      key: "1c8476"
-    }
-  ],
-  ["path", { d: "M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7", key: "1ydtos" }],
-  ["path", { d: "M7 3v4a1 1 0 0 0 1 1h7", key: "t51u73" }]
-];
-const Save = createLucideIcon("save", __iconNode$7);
-/**
- * @license lucide-react v0.511.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */
-const __iconNode$6 = [
   [
     "path",
     {
@@ -30879,14 +31365,14 @@ const __iconNode$6 = [
   ],
   ["circle", { cx: "12", cy: "12", r: "3", key: "1v7zrd" }]
 ];
-const Settings = createLucideIcon("settings", __iconNode$6);
+const Settings = createLucideIcon("settings", __iconNode$9);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$5 = [
+const __iconNode$8 = [
   [
     "path",
     {
@@ -30896,14 +31382,27 @@ const __iconNode$5 = [
   ],
   ["path", { d: "m9 12 2 2 4-4", key: "dzmm74" }]
 ];
-const ShieldCheck = createLucideIcon("shield-check", __iconNode$5);
+const ShieldCheck = createLucideIcon("shield-check", __iconNode$8);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
  */
-const __iconNode$4 = [
+const __iconNode$7 = [
+  ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
+  ["path", { d: "M8 14s1.5 2 4 2 4-2 4-2", key: "1y1vjs" }],
+  ["line", { x1: "9", x2: "9.01", y1: "9", y2: "9", key: "yxxnd0" }],
+  ["line", { x1: "15", x2: "15.01", y1: "9", y2: "9", key: "1p4y9e" }]
+];
+const Smile = createLucideIcon("smile", __iconNode$7);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$6 = [
   ["circle", { cx: "12", cy: "12", r: "4", key: "4exip2" }],
   ["path", { d: "M12 2v2", key: "tus03m" }],
   ["path", { d: "M12 20v2", key: "1lh1kg" }],
@@ -30914,7 +31413,38 @@ const __iconNode$4 = [
   ["path", { d: "m6.34 17.66-1.41 1.41", key: "1m8zz5" }],
   ["path", { d: "m19.07 4.93-1.41 1.41", key: "1shlcs" }]
 ];
-const Sun = createLucideIcon("sun", __iconNode$4);
+const Sun = createLucideIcon("sun", __iconNode$6);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$5 = [
+  ["path", { d: "M17 14V2", key: "8ymqnk" }],
+  [
+    "path",
+    {
+      d: "M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z",
+      key: "m61m77"
+    }
+  ]
+];
+const ThumbsDown = createLucideIcon("thumbs-down", __iconNode$5);
+/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */
+const __iconNode$4 = [
+  ["path", { d: "M3 6h18", key: "d0wm0j" }],
+  ["path", { d: "M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6", key: "4alrt4" }],
+  ["path", { d: "M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2", key: "v07s0e" }],
+  ["line", { x1: "10", x2: "10", y1: "11", y2: "17", key: "1uufr5" }],
+  ["line", { x1: "14", x2: "14", y1: "11", y2: "17", key: "xtxkd" }]
+];
+const Trash2 = createLucideIcon("trash-2", __iconNode$4);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -30922,13 +31452,10 @@ const Sun = createLucideIcon("sun", __iconNode$4);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$3 = [
-  ["path", { d: "M3 6h18", key: "d0wm0j" }],
-  ["path", { d: "M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6", key: "4alrt4" }],
-  ["path", { d: "M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2", key: "v07s0e" }],
-  ["line", { x1: "10", x2: "10", y1: "11", y2: "17", key: "1uufr5" }],
-  ["line", { x1: "14", x2: "14", y1: "11", y2: "17", key: "xtxkd" }]
+  ["path", { d: "M16 7h6v6", key: "box55l" }],
+  ["path", { d: "m22 7-8.5 8.5-5-5L2 17", key: "1t1m79" }]
 ];
-const Trash2 = createLucideIcon("trash-2", __iconNode$3);
+const TrendingUp = createLucideIcon("trending-up", __iconNode$3);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -30936,10 +31463,17 @@ const Trash2 = createLucideIcon("trash-2", __iconNode$3);
  * See the LICENSE file in the root directory of this source tree.
  */
 const __iconNode$2 = [
-  ["path", { d: "M16 7h6v6", key: "box55l" }],
-  ["path", { d: "m22 7-8.5 8.5-5-5L2 17", key: "1t1m79" }]
+  [
+    "path",
+    {
+      d: "m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3",
+      key: "wmoenq"
+    }
+  ],
+  ["path", { d: "M12 9v4", key: "juzpu7" }],
+  ["path", { d: "M12 17h.01", key: "p32p05" }]
 ];
-const TrendingUp = createLucideIcon("trending-up", __iconNode$2);
+const TriangleAlert = createLucideIcon("triangle-alert", __iconNode$2);
 /**
  * @license lucide-react v0.511.0 - ISC
  *
@@ -30980,36 +31514,104 @@ function AboutTab() {
       setTimeout(() => setCopied(false), 2500);
     });
   }
+  const featureCategories = [
+    {
+      label: "Price & Market",
+      icon: "📈",
+      features: [
+        "Live ICP price from CoinGecko, Binance & Coinbase with automatic fallback",
+        "24h High / Low display synced to your refresh interval",
+        "Fear & Greed Index — live ICP market sentiment meter",
+        "Social Trending — ICP social media trending rating",
+        "7-day Price Chart with volume bars"
+      ]
+    },
+    {
+      label: "Portfolio & Strategy",
+      icon: "💼",
+      features: [
+        "Portfolio Value Calculator — ICP amount, invested USD, current value",
+        "Gain / Loss tracker with Avg. Entry (break-even) price",
+        "Exit Strategy Planner — set price targets with token amounts to sell",
+        "Execute trades directly — records each completed sale to Historical Data",
+        "Email alerts when ICP hits your target prices"
+      ]
+    },
+    {
+      label: "Community & News",
+      icon: "🌐",
+      features: [
+        "Community Chat — real-time ICP discussion with threaded replies",
+        "Like / Dislike, Shill & FUD reactions with automatic sub-tab sorting",
+        "Image uploads and YouTube link previews in chat",
+        "ICP News Feed — DFINITY Forum, CoinGecko & community sources",
+        "Admin announcements pinned to the top of the news feed"
+      ]
+    },
+    {
+      label: "Personalization & Security",
+      icon: "🔒",
+      features: [
+        "Internet Identity login — decentralized, no passwords",
+        "All data (portfolio, settings, exit plan) tied to your identity on-chain",
+        "Multi-currency support — choose your base currency; values shown in both",
+        "Dark / Light mode saved to your account",
+        "7 languages: English, Español, Français, Deutsch, 中文, 日本語, Português"
+      ]
+    }
+  ];
   return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-6", "data-ocid": "about.section", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "bg-card border border-border rounded-xl p-6 space-y-4", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-10 h-10 rounded-lg bg-accent/20 border border-accent/30 flex items-center justify-center shrink-0", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Info, { className: "w-5 h-5 text-accent" }) }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "font-display font-semibold text-lg text-foreground", children: "ICP Value Tracker" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-muted-foreground", children: "Your personal Internet Computer portfolio dashboard" })
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "bg-card border border-border rounded-xl p-6", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-start gap-4", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-12 h-12 rounded-xl bg-accent/20 border border-accent/30 flex items-center justify-center shrink-0 text-2xl", children: "⚡" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1 min-w-0", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 flex-wrap", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "font-display font-bold text-2xl text-foreground tracking-tight", children: "ICP Pulse" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "inline-flex items-center rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white shadow-sm", children: "beta" })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-muted-foreground mt-1 leading-relaxed", children: "Your all-in-one Internet Computer portfolio dashboard — live prices, exit strategy planning, community chat, and market intelligence, all secured on-chain via Internet Identity." })
         ] })
       ] }),
-      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2", children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-sm font-semibold text-foreground", children: "Features" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("ul", { className: "space-y-1.5 text-sm text-muted-foreground", children: [
-            "Live ICP price with 24h high/low",
-            "Portfolio value & investment tracking",
-            "Fear & greed meter + social trending",
-            "Exit strategy planner with price targets",
-            "ICP & ecosystem news aggregator",
-            "Historical data & execution log"
-          ].map((item) => /* @__PURE__ */ jsxRuntimeExports.jsxs("li", { className: "flex items-start gap-2", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-accent mt-0.5", children: "•" }),
-            item
-          ] }, item)) })
-        ] }),
-        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-sm font-semibold text-foreground", children: "About" }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-muted-foreground leading-relaxed", children: "Built on the Internet Computer blockchain, your data is stored securely on-chain and tied to your Internet Identity — no passwords, no central servers." }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-muted-foreground leading-relaxed", children: "Prices refresh automatically and pull from multiple sources (CoinGecko, Binance, Coinbase) with graceful fallback to cached values when feeds are temporarily unavailable." })
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-5 pt-5 border-t border-border", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-sm text-muted-foreground leading-relaxed", children: [
+        "Built on the",
+        " ",
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-foreground font-medium", children: "Internet Computer" }),
+        " ",
+        "blockchain (developed by DFINITY Foundation), ICP Pulse stores your data securely on-chain — no central servers, no passwords. Prices refresh automatically from multiple sources with graceful fallback to cached values, and your personal settings are always tied to your unique Internet Identity."
+      ] }) })
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "bg-card border border-border rounded-xl p-6 space-y-5", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-9 h-9 rounded-lg bg-accent/20 border border-accent/30 flex items-center justify-center shrink-0", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Info, { className: "w-4.5 h-4.5 text-accent" }) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "font-display font-semibold text-base text-foreground", children: "What's included in beta" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-muted-foreground", children: "15 features across 4 categories" })
         ] })
-      ] })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-5", children: featureCategories.map((cat) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+        "div",
+        {
+          className: "rounded-lg bg-muted/40 border border-border p-4 space-y-2.5",
+          children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-base leading-none", children: cat.icon }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "text-sm font-semibold text-foreground", children: cat.label })
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("ul", { className: "space-y-1.5", children: cat.features.map((f2) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+              "li",
+              {
+                className: "flex items-start gap-2 text-xs text-muted-foreground leading-relaxed",
+                children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-accent mt-0.5 shrink-0", children: "✓" }),
+                  f2
+                ]
+              },
+              f2
+            )) })
+          ]
+        },
+        cat.label
+      )) })
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs(
       "div",
@@ -31018,13 +31620,13 @@ function AboutTab() {
         "data-ocid": "about.donation.card",
         children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-10 h-10 rounded-lg bg-accent/20 border border-accent/30 flex items-center justify-center shrink-0", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Heart, { className: "w-5 h-5 text-accent" }) }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-9 h-9 rounded-lg bg-accent/20 border border-accent/30 flex items-center justify-center shrink-0", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Heart, { className: "w-4.5 h-4.5 text-accent" }) }),
             /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "font-display font-semibold text-lg text-foreground", children: "Support This Project" }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-muted-foreground", children: "Help keep the tracker running and improving" })
+              /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "font-display font-semibold text-base text-foreground", children: "Support ICP Pulse" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-muted-foreground", children: "Help keep the app running and growing" })
             ] })
           ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-muted-foreground leading-relaxed", children: "This tracker runs on the Internet Computer and is free to use. If you find it useful, consider sending a small ICP donation to help cover compute cycles and ongoing development. Every contribution is appreciated!" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-muted-foreground leading-relaxed", children: "ICP Pulse is free to use and runs entirely on the Internet Computer. If it's been useful to your ICP journey, consider sending a small ICP donation to help cover on-chain compute cycles and future development. Every contribution is genuinely appreciated!" }),
           address ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-5", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
               /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground", children: [
@@ -49273,7 +49875,7 @@ function SortIcon({
   if (col !== active) return /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronUp, { className: "w-3 h-3 opacity-25" });
   return dir === "asc" ? /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronUp, { className: "w-3 h-3" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(ChevronDown, { className: "w-3 h-3" });
 }
-const PAGE_SIZE = 30;
+const PAGE_SIZE$1 = 30;
 function HistoryTable({
   currency = "USD",
   rates = {},
@@ -49307,7 +49909,7 @@ function HistoryTable({
       bv = b2[sortKey];
     }
     return sortDir === "asc" ? av - bv : bv - av;
-  }).slice(0, PAGE_SIZE) : [];
+  }).slice(0, PAGE_SIZE$1) : [];
   const execSorted = executions ? [...executions].sort((a2, b2) => Number(b2.executedAt - a2.executedAt)) : [];
   const execTotals = execSorted.reduce(
     (acc, r2) => ({
@@ -49502,6 +50104,891 @@ function HistoryTable({
         ]
       }
     )
+  ] });
+}
+const COMMON_EMOJIS = [
+  "😀",
+  "😂",
+  "😍",
+  "🤩",
+  "😎",
+  "🤔",
+  "😅",
+  "🙌",
+  "👍",
+  "👎",
+  "🔥",
+  "💎",
+  "🚀",
+  "🌙",
+  "⭐",
+  "💰",
+  "💸",
+  "📈",
+  "📉",
+  "🏦",
+  "🦁",
+  "🐻",
+  "🦊",
+  "🐉",
+  "🌊",
+  "⚡",
+  "❄️",
+  "🎯",
+  "🏆",
+  "🎉",
+  "✅",
+  "❌",
+  "⚠️",
+  "💡",
+  "🔑",
+  "🛡️",
+  "⚔️",
+  "🌐",
+  "🔗",
+  "💻",
+  "👀",
+  "💪",
+  "🤝",
+  "👏",
+  "🙏",
+  "❤️",
+  "💙",
+  "💚",
+  "💜",
+  "🖤"
+];
+function extractYouTubeId(url) {
+  try {
+    const u2 = new URL(url);
+    if (u2.hostname === "youtu.be") return u2.pathname.slice(1).split("?")[0];
+    if (u2.hostname.includes("youtube.com")) return u2.searchParams.get("v");
+  } catch {
+  }
+  return null;
+}
+function getDomain(url) {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return url;
+  }
+}
+function buildUrlPreview(url) {
+  const ytId = extractYouTubeId(url);
+  if (ytId) {
+    return {
+      url,
+      title: "YouTube Video",
+      description: "Click to watch on YouTube",
+      thumbnailUrl: `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`
+    };
+  }
+  return {
+    url,
+    title: url.length > 50 ? `${url.slice(0, 50)}…` : url,
+    description: "",
+    thumbnailUrl: ""
+  };
+}
+const URL_REGEX = /(https?:\/\/[^\s]+)/i;
+function UrlPreviewCard({
+  preview,
+  onDismiss,
+  clickable = false
+}) {
+  const [imgFailed, setImgFailed] = reactExports.useState(false);
+  const domain = getDomain(preview.url);
+  const inner = /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-start gap-3", children: [
+    preview.thumbnailUrl && !imgFailed && /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "img",
+      {
+        src: preview.thumbnailUrl,
+        alt: "",
+        className: "w-20 h-14 object-cover rounded flex-shrink-0",
+        onError: () => setImgFailed(true),
+        loading: "lazy"
+      }
+    ),
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "min-w-0 flex-1", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-1", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm font-semibold text-foreground truncate leading-snug", children: preview.title }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(ExternalLink, { className: "w-3 h-3 text-muted-foreground flex-shrink-0" })
+      ] }),
+      preview.description && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-muted-foreground line-clamp-2 mt-0.5", children: preview.description }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[11px] text-muted-foreground/60 mt-1 truncate", children: domain })
+    ] })
+  ] });
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "relative mt-2", children: [
+    clickable ? /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "a",
+      {
+        href: preview.url,
+        target: "_blank",
+        rel: "noopener noreferrer",
+        className: "block rounded-lg border border-border bg-muted/50 dark:bg-muted/30 shadow-sm p-3 hover:bg-muted/70 transition-colors",
+        "data-ocid": "chat.url_preview_link",
+        children: inner
+      }
+    ) : /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "rounded-lg border border-border bg-muted/50 dark:bg-muted/30 shadow-sm p-3", children: inner }),
+    onDismiss && /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "button",
+      {
+        type: "button",
+        onClick: onDismiss,
+        className: "absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-muted border border-border text-muted-foreground text-xs flex items-center justify-center leading-none hover:bg-destructive hover:text-background transition-colors",
+        "aria-label": "Dismiss link preview",
+        "data-ocid": "chat.url_preview_dismiss",
+        children: "✕"
+      }
+    )
+  ] });
+}
+const PAGE_SIZE = 20;
+function formatChatTime(ns) {
+  const ms = Number(ns / 1000000n);
+  const d2 = new Date(ms);
+  const now2 = /* @__PURE__ */ new Date();
+  const diffMs = now2.getTime() - ms;
+  const diffMin = Math.floor(diffMs / 6e4);
+  const diffHr = Math.floor(diffMs / 36e5);
+  const diffDay = Math.floor(diffMs / 864e5);
+  if (diffMin < 1) return "just now";
+  if (diffMin < 60) return `${diffMin}m ago`;
+  if (diffHr < 24) return `${diffHr}h ago`;
+  if (diffDay < 7)
+    return d2.toLocaleDateString([], {
+      weekday: "short",
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+  return d2.toLocaleDateString([], {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+function abbrevPrincipal(p2) {
+  if (!p2) return "anon";
+  return `${p2.slice(0, 5)}…${p2.slice(-4)}`;
+}
+function EmojiPicker({ onSelect, onClose }) {
+  const ref = reactExports.useRef(null);
+  reactExports.useEffect(() => {
+    function handleClick(e3) {
+      if (ref.current && !ref.current.contains(e3.target)) {
+        onClose();
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [onClose]);
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(
+    "div",
+    {
+      ref,
+      className: "absolute bottom-full mb-2 left-0 z-50 bg-card border border-border rounded-xl shadow-lg p-3 w-56",
+      "data-ocid": "chat.emoji_picker",
+      children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "grid grid-cols-10 gap-1", children: COMMON_EMOJIS.map((emoji) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "button",
+        {
+          type: "button",
+          onClick: () => onSelect(emoji),
+          className: "text-lg hover:bg-muted rounded p-0.5 transition-colors leading-none",
+          "aria-label": emoji,
+          children: emoji
+        },
+        emoji
+      )) })
+    }
+  );
+}
+function ComposeArea({
+  onPost,
+  isPosting,
+  replyToId = null,
+  replyToAuthor,
+  onCancelReply,
+  placeholder = "Share your thoughts on ICP…",
+  compact = false
+}) {
+  const [content, setContent] = reactExports.useState("");
+  const [showEmoji, setShowEmoji] = reactExports.useState(false);
+  const [imagePreview, setImagePreview] = reactExports.useState(null);
+  const [urlPreview, setUrlPreview] = reactExports.useState(null);
+  const [urlDismissed, setUrlDismissed] = reactExports.useState(false);
+  const textareaRef = reactExports.useRef(null);
+  const fileInputRef = reactExports.useRef(null);
+  const handleImageSelect = (e3) => {
+    var _a3;
+    const file = (_a3 = e3.target.files) == null ? void 0 : _a3[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      var _a4;
+      return setImagePreview((_a4 = ev.target) == null ? void 0 : _a4.result);
+    };
+    reader.readAsDataURL(file);
+    e3.target.value = "";
+  };
+  const handlePost = () => {
+    const trimmed = content.trim();
+    if (!trimmed && !imagePreview) return;
+    const activePreview = urlPreview && !urlDismissed ? urlPreview : null;
+    onPost(trimmed || "📷", null, replyToId ?? null, activePreview);
+    setContent("");
+    setShowEmoji(false);
+    setImagePreview(null);
+    setUrlPreview(null);
+    setUrlDismissed(false);
+  };
+  const handleKeyDown = (e3) => {
+    if (e3.key === "Enter" && (e3.ctrlKey || e3.metaKey)) {
+      e3.preventDefault();
+      handlePost();
+    }
+  };
+  const insertEmoji = (emoji) => {
+    const ta = textareaRef.current;
+    if (!ta) {
+      setContent((c2) => c2 + emoji);
+      return;
+    }
+    const start = ta.selectionStart ?? content.length;
+    const end = ta.selectionEnd ?? content.length;
+    const next = content.slice(0, start) + emoji + content.slice(end);
+    setContent(next);
+    setTimeout(() => {
+      ta.focus();
+      ta.setSelectionRange(start + emoji.length, start + emoji.length);
+    }, 0);
+  };
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    "div",
+    {
+      className: `bg-card border border-border rounded-xl p-3 space-y-2 ${compact ? "" : ""}`,
+      children: [
+        replyToAuthor && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between text-xs text-muted-foreground bg-muted/50 rounded-lg px-3 py-1.5", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { children: [
+            "Replying to",
+            " ",
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-mono text-accent", children: replyToAuthor })
+          ] }),
+          onCancelReply && /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "button",
+            {
+              type: "button",
+              onClick: onCancelReply,
+              className: "text-muted-foreground hover:text-foreground ml-2 transition-colors",
+              "aria-label": "Cancel reply",
+              children: "✕"
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "relative", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "textarea",
+          {
+            ref: textareaRef,
+            value: content,
+            onChange: (e3) => {
+              const val = e3.target.value;
+              setContent(val);
+              const match = val.match(URL_REGEX);
+              if (match) {
+                const detected = buildUrlPreview(match[1]);
+                setUrlPreview(detected);
+                setUrlDismissed(false);
+              } else {
+                setUrlPreview(null);
+                setUrlDismissed(false);
+              }
+            },
+            onKeyDown: handleKeyDown,
+            placeholder,
+            rows: compact ? 2 : 3,
+            maxLength: 1e3,
+            className: "w-full bg-background border border-input rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-2 focus:ring-accent/40 transition-colors",
+            "data-ocid": "chat.message_input"
+          }
+        ) }),
+        urlPreview && !urlDismissed && /* @__PURE__ */ jsxRuntimeExports.jsx(
+          UrlPreviewCard,
+          {
+            preview: urlPreview,
+            onDismiss: () => setUrlDismissed(true)
+          }
+        ),
+        imagePreview && /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "relative inline-block", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "img",
+            {
+              src: imagePreview,
+              alt: "Preview",
+              className: "max-h-28 rounded-lg border border-border object-contain"
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "button",
+            {
+              type: "button",
+              onClick: () => setImagePreview(null),
+              className: "absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-destructive text-background text-xs flex items-center justify-center leading-none",
+              "aria-label": "Remove image",
+              children: "✕"
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between gap-2", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-1 relative", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              "button",
+              {
+                type: "button",
+                onClick: () => setShowEmoji((v2) => !v2),
+                className: "p-1.5 rounded-lg text-muted-foreground hover:text-accent hover:bg-muted transition-colors",
+                "aria-label": "Open emoji picker",
+                "data-ocid": "chat.emoji_button",
+                children: /* @__PURE__ */ jsxRuntimeExports.jsx(Smile, { className: "w-4 h-4" })
+              }
+            ),
+            showEmoji && /* @__PURE__ */ jsxRuntimeExports.jsx(
+              EmojiPicker,
+              {
+                onSelect: (e3) => {
+                  insertEmoji(e3);
+                },
+                onClose: () => setShowEmoji(false)
+              }
+            ),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              "input",
+              {
+                ref: fileInputRef,
+                type: "file",
+                accept: "image/*",
+                className: "hidden",
+                onChange: handleImageSelect,
+                "data-ocid": "chat.image_file_input"
+              }
+            ),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              "button",
+              {
+                type: "button",
+                onClick: () => {
+                  var _a3;
+                  return (_a3 = fileInputRef.current) == null ? void 0 : _a3.click();
+                },
+                className: "p-1.5 rounded-lg text-muted-foreground hover:text-accent hover:bg-muted transition-colors",
+                "aria-label": "Attach image",
+                "data-ocid": "chat.image_upload_button",
+                children: /* @__PURE__ */ jsxRuntimeExports.jsx(Image, { className: "w-4 h-4" })
+              }
+            ),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "text-[11px] text-muted-foreground/60 ml-1", children: [
+              content.length,
+              "/1000"
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "button",
+            {
+              type: "button",
+              onClick: handlePost,
+              disabled: isPosting || !content.trim(),
+              className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent text-background text-sm font-medium hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors",
+              "data-ocid": "chat.post_button",
+              children: [
+                isPosting ? /* @__PURE__ */ jsxRuntimeExports.jsx(LoaderCircle, { className: "w-3.5 h-3.5 animate-spin" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(Send, { className: "w-3.5 h-3.5" }),
+                compact ? "Reply" : "Post"
+              ]
+            }
+          )
+        ] }),
+        !compact && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[11px] text-muted-foreground/60", children: "Ctrl+Enter to post · Markdown not supported" })
+      ]
+    }
+  );
+}
+function MessageCard({
+  msg,
+  currentPrincipal,
+  onLike,
+  onDislike,
+  onShill,
+  onFud,
+  onDelete,
+  onReply,
+  isReply = false
+}) {
+  const authorStr = msg.authorPrincipal.toString();
+  const isOwn = currentPrincipal === authorStr;
+  const likeCount = msg.likes.length;
+  const dislikeCount = msg.dislikes.length;
+  const shillCount = msg.shills.length;
+  const fudCount = msg.fuds.length;
+  const hasLiked = currentPrincipal ? msg.likes.some((p2) => p2.toString() === currentPrincipal) : false;
+  const hasDisliked = currentPrincipal ? msg.dislikes.some((p2) => p2.toString() === currentPrincipal) : false;
+  const hasShill = currentPrincipal ? msg.shills.some((p2) => p2.toString() === currentPrincipal) : false;
+  const hasFud = currentPrincipal ? msg.fuds.some((p2) => p2.toString() === currentPrincipal) : false;
+  if (msg.isDeleted) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "div",
+      {
+        className: `${isReply ? "ml-8 border-l-2 border-border pl-3" : ""} py-2`,
+        children: /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-muted-foreground/60 italic", children: "This message was deleted." })
+      }
+    );
+  }
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+    "div",
+    {
+      className: `group ${isReply ? "ml-8 border-l-2 border-accent/20 pl-3" : "bg-card border border-border rounded-xl p-4 hover:border-accent/30 transition-colors"}`,
+      "data-ocid": "chat.message.card",
+      children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between gap-2 mb-2", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 min-w-0", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              "div",
+              {
+                className: "w-7 h-7 rounded-full bg-accent/20 border border-accent/30 flex items-center justify-center text-[11px] font-mono font-bold text-accent flex-shrink-0",
+                title: authorStr,
+                children: authorStr.slice(0, 2).toUpperCase()
+              }
+            ),
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              "span",
+              {
+                className: "text-xs font-mono font-medium text-foreground truncate",
+                title: authorStr,
+                children: msg.authorName || abbrevPrincipal(authorStr)
+              }
+            ),
+            isOwn && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[10px] font-semibold uppercase tracking-wider bg-accent/15 text-accent border border-accent/25 rounded px-1 py-0.5 flex-shrink-0", children: "You" })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "span",
+            {
+              className: "text-[11px] text-muted-foreground/70 flex-shrink-0",
+              title: new Date(Number(msg.timestamp / 1000000n)).toLocaleString(),
+              children: formatChatTime(msg.timestamp)
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-foreground leading-relaxed whitespace-pre-wrap break-words", children: msg.content }),
+        msg.imageKey && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-2 rounded-lg overflow-hidden border border-border max-w-sm", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "img",
+          {
+            src: msg.imageKey,
+            alt: "Shared content",
+            className: "w-full h-auto object-cover",
+            loading: "lazy"
+          }
+        ) }),
+        msg.urlPreview && /* @__PURE__ */ jsxRuntimeExports.jsx(UrlPreviewCard, { preview: msg.urlPreview, clickable: true }),
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center flex-wrap gap-1 mt-3 -ml-1", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "button",
+            {
+              type: "button",
+              onClick: () => onLike(msg.id),
+              disabled: !currentPrincipal,
+              className: `flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-colors ${hasLiked ? "text-emerald-400 bg-emerald-400/10" : "text-muted-foreground hover:text-emerald-400 hover:bg-emerald-400/10"} disabled:opacity-40 disabled:cursor-not-allowed`,
+              "aria-label": "Like",
+              "data-ocid": "chat.like_button",
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Heart, { className: "w-3.5 h-3.5" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: likeCount })
+              ]
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "button",
+            {
+              type: "button",
+              onClick: () => onDislike(msg.id),
+              disabled: !currentPrincipal,
+              className: `flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-colors ${hasDisliked ? "text-destructive bg-destructive/10" : "text-muted-foreground hover:text-destructive hover:bg-destructive/10"} disabled:opacity-40 disabled:cursor-not-allowed`,
+              "aria-label": "Dislike",
+              "data-ocid": "chat.dislike_button",
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(ThumbsDown, { className: "w-3.5 h-3.5" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: dislikeCount })
+              ]
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "button",
+            {
+              type: "button",
+              onClick: () => onShill(msg.id),
+              disabled: !currentPrincipal,
+              className: `flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-colors ${hasShill ? "text-amber-400 bg-amber-400/10" : "text-muted-foreground hover:text-amber-400 hover:bg-amber-400/10"} disabled:opacity-40 disabled:cursor-not-allowed`,
+              "aria-label": "Shill",
+              "data-ocid": "chat.shill_button",
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Rocket, { className: "w-3.5 h-3.5" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: shillCount > 0 ? shillCount : "" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[10px] font-semibold", children: "Shill" })
+              ]
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "button",
+            {
+              type: "button",
+              onClick: () => onFud(msg.id),
+              disabled: !currentPrincipal,
+              className: `flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-colors ${hasFud ? "text-orange-500 bg-orange-500/10" : "text-muted-foreground hover:text-orange-500 hover:bg-orange-500/10"} disabled:opacity-40 disabled:cursor-not-allowed`,
+              "aria-label": "FUD",
+              "data-ocid": "chat.fud_button",
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(TriangleAlert, { className: "w-3.5 h-3.5" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: fudCount > 0 ? fudCount : "" }),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[10px] font-semibold", children: "FUD" })
+              ]
+            }
+          ),
+          !isReply && /* @__PURE__ */ jsxRuntimeExports.jsxs(
+            "button",
+            {
+              type: "button",
+              onClick: () => onReply(msg.id, msg.authorName || abbrevPrincipal(authorStr)),
+              disabled: !currentPrincipal,
+              className: "flex items-center gap-1 px-2 py-1 rounded-lg text-xs text-muted-foreground hover:text-accent hover:bg-accent/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed",
+              "aria-label": "Reply",
+              "data-ocid": "chat.reply_button",
+              children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(Reply, { className: "w-3.5 h-3.5" }),
+                "Reply"
+              ]
+            }
+          ),
+          isOwn && /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "button",
+            {
+              type: "button",
+              onClick: () => onDelete(msg.id),
+              className: "flex items-center gap-1 px-2 py-1 rounded-lg text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 ml-auto",
+              "aria-label": "Delete message",
+              "data-ocid": "chat.delete_button",
+              children: /* @__PURE__ */ jsxRuntimeExports.jsx(Trash2, { className: "w-3.5 h-3.5" })
+            }
+          )
+        ] })
+      ]
+    }
+  );
+}
+function ICPCommunityChat() {
+  const { isAuthenticated, identity: identity3, login } = useInternetIdentity();
+  const currentPrincipal = (identity3 == null ? void 0 : identity3.getPrincipal().toString()) ?? null;
+  const [offset2, setOffset] = reactExports.useState(0);
+  const [_replyToId, setReplyToId] = reactExports.useState(null);
+  const [replyToAuthor, setReplyToAuthor] = reactExports.useState(null);
+  const [replyOpenForMsgId, setReplyOpenForMsgId] = reactExports.useState(
+    null
+  );
+  const [activeTab, setActiveTab] = reactExports.useState("icp");
+  const {
+    data: messages = [],
+    isLoading,
+    isError,
+    refetch
+  } = useChatMessages(PAGE_SIZE, offset2);
+  const { mutate: postMessage, isPending: isPosting } = usePostChatMessage();
+  const { mutate: toggleLike } = useToggleChatLike();
+  const { mutate: toggleShill } = useToggleChatShill();
+  const { mutate: deleteMessage } = useDeleteChatMessage();
+  const allTopLevel = messages.filter((m2) => !m2.replyToId);
+  const icpMessages = allTopLevel.filter((m2) => m2.tab === "icp");
+  const shillMessages = allTopLevel.filter((m2) => m2.tab === "shills");
+  const fudMessages = allTopLevel.filter((m2) => m2.tab === "fud");
+  const topLevel = activeTab === "shills" ? shillMessages : activeTab === "fud" ? fudMessages : icpMessages;
+  const repliesByParent = messages.reduce(
+    (acc, m2) => {
+      if (m2.replyToId) {
+        const key = m2.replyToId.toString();
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(m2);
+      }
+      return acc;
+    },
+    {}
+  );
+  const handlePost = reactExports.useCallback(
+    (content, imageKey, rToId, urlPreview) => {
+      postMessage(
+        { content, imageKey, replyToId: rToId, urlPreview: urlPreview ?? null },
+        {
+          onSuccess: () => {
+            ue.success("Message posted!");
+            setReplyToId(null);
+            setReplyToAuthor(null);
+            setReplyOpenForMsgId(null);
+          },
+          onError: (err) => ue.error(`Failed to post: ${err.message}`)
+        }
+      );
+    },
+    [postMessage]
+  );
+  const handleLike = (id2) => {
+    toggleLike(
+      { messageId: id2, isLike: true },
+      { onError: () => ue.error("Like failed") }
+    );
+  };
+  const handleDislike = (id2) => {
+    toggleLike(
+      { messageId: id2, isLike: false },
+      { onError: () => ue.error("Dislike failed") }
+    );
+  };
+  const handleShill = (id2) => {
+    toggleShill(
+      { messageId: id2, isShill: true },
+      { onError: () => ue.error("Shill reaction failed") }
+    );
+  };
+  const handleFud = (id2) => {
+    toggleShill(
+      { messageId: id2, isShill: false },
+      { onError: () => ue.error("FUD reaction failed") }
+    );
+  };
+  const handleDelete = (id2) => {
+    deleteMessage(id2, {
+      onSuccess: () => ue.success("Message deleted"),
+      onError: () => ue.error("Delete failed")
+    });
+  };
+  const handleReply = (msgId, authorName) => {
+    setReplyOpenForMsgId((prev) => prev === msgId ? null : msgId);
+    setReplyToId(msgId);
+    setReplyToAuthor(authorName);
+  };
+  const handleLoadMore = () => setOffset((o2) => o2 + PAGE_SIZE);
+  const TAB_CONFIG = [
+    {
+      id: "icp",
+      label: "ICP",
+      count: icpMessages.length,
+      activeClass: "bg-accent text-background",
+      hoverClass: "hover:bg-accent/10 hover:text-accent"
+    },
+    {
+      id: "shills",
+      label: "Shills",
+      count: shillMessages.length,
+      activeClass: "bg-amber-400 text-background",
+      hoverClass: "hover:bg-amber-400/10 hover:text-amber-400"
+    },
+    {
+      id: "fud",
+      label: "FUD",
+      count: fudMessages.length,
+      activeClass: "bg-orange-500 text-background",
+      hoverClass: "hover:bg-orange-500/10 hover:text-orange-500"
+    }
+  ];
+  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-5", "data-ocid": "chat.section", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(MessageSquare, { className: "w-5 h-5 text-accent" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "font-display font-semibold text-foreground text-lg", children: "ICP Community Chat" }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-[11px] font-semibold uppercase tracking-wider bg-accent/15 text-accent border border-accent/25 rounded px-1.5 py-0.5", children: "Live" })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "button",
+        {
+          type: "button",
+          onClick: () => refetch(),
+          className: "text-xs text-muted-foreground hover:text-accent transition-colors",
+          "data-ocid": "chat.refresh_button",
+          children: "Refresh"
+        }
+      )
+    ] }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "div",
+      {
+        className: "flex items-center gap-1 bg-muted/40 rounded-xl p-1",
+        "data-ocid": "chat.tabs",
+        children: TAB_CONFIG.map((t2) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+          "button",
+          {
+            type: "button",
+            onClick: () => setActiveTab(t2.id),
+            className: `flex items-center gap-1.5 flex-1 justify-center px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${activeTab === t2.id ? t2.activeClass : `text-muted-foreground ${t2.hoverClass}`}`,
+            "data-ocid": `chat.${t2.id}_tab`,
+            children: [
+              t2.label,
+              t2.count > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "span",
+                {
+                  className: `text-[10px] font-bold rounded-full px-1.5 py-0.5 min-w-[18px] text-center leading-none ${activeTab === t2.id ? "bg-background/25 text-inherit" : "bg-muted text-muted-foreground"}`,
+                  children: t2.count
+                }
+              )
+            ]
+          },
+          t2.id
+        ))
+      }
+    ),
+    isAuthenticated ? /* @__PURE__ */ jsxRuntimeExports.jsx(
+      ComposeArea,
+      {
+        onPost: (content, imgKey, rId, preview) => handlePost(content, imgKey, rId, preview),
+        isPosting
+      }
+    ) : /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "div",
+      {
+        className: "bg-card border border-border rounded-xl p-6 text-center space-y-3",
+        "data-ocid": "chat.login_prompt",
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(MessageSquare, { className: "w-8 h-8 text-muted-foreground/50 mx-auto" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-muted-foreground", children: "Log in with Internet Identity to join the conversation." }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "button",
+            {
+              type: "button",
+              onClick: () => login(),
+              className: "px-4 py-2 rounded-lg bg-accent text-background text-sm font-medium hover:bg-accent/90 transition-colors",
+              "data-ocid": "chat.login_button",
+              children: "Log In"
+            }
+          )
+        ]
+      }
+    ),
+    isLoading && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-3", "data-ocid": "chat.loading_state", children: [1, 2, 3].map((i) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "div",
+      {
+        className: "bg-card border border-border rounded-xl p-4 space-y-3 animate-pulse",
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-7 h-7 rounded-full bg-muted" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-3.5 w-28 bg-muted rounded" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-3 w-14 bg-muted rounded ml-auto" })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-3 bg-muted rounded w-full" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-3 bg-muted rounded w-4/5" })
+          ] })
+        ]
+      },
+      i
+    )) }),
+    isError && !isLoading && /* @__PURE__ */ jsxRuntimeExports.jsxs(
+      "div",
+      {
+        className: "bg-destructive/10 border border-destructive/30 rounded-xl p-5 text-center space-y-2",
+        "data-ocid": "chat.error_state",
+        children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-destructive", children: "Failed to load messages." }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "button",
+            {
+              type: "button",
+              onClick: () => refetch(),
+              className: "text-xs text-destructive hover:underline transition-colors",
+              children: "Retry"
+            }
+          )
+        ]
+      }
+    ),
+    !isLoading && !isError && topLevel.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "div",
+      {
+        className: "bg-card border border-border rounded-xl p-8 text-center space-y-3",
+        "data-ocid": "chat.empty_state",
+        children: activeTab === "shills" ? /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(Rocket, { className: "w-10 h-10 text-amber-400/40 mx-auto" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "font-medium text-foreground", children: "No Shills yet" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-muted-foreground", children: "Messages that get more Shill votes than Likes will appear here." })
+        ] }) : activeTab === "fud" ? /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(TriangleAlert, { className: "w-10 h-10 text-orange-500/40 mx-auto" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "font-medium text-foreground", children: "No FUD here" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-muted-foreground", children: "Messages that get more FUD votes than Likes will appear here." })
+        ] }) : /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsx(MessageSquare, { className: "w-10 h-10 text-muted-foreground/40 mx-auto" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "font-medium text-foreground", children: "No messages yet" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-muted-foreground", children: "Be the first to start a conversation about ICP!" })
+        ] })
+      }
+    ),
+    !isLoading && topLevel.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-3", children: topLevel.map((msg, idx) => {
+      const replies = repliesByParent[msg.id.toString()] ?? [];
+      const isReplyOpen = replyOpenForMsgId === msg.id;
+      return /* @__PURE__ */ jsxRuntimeExports.jsxs(
+        "div",
+        {
+          "data-ocid": `chat.message.item.${idx + 1}`,
+          children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx(
+              MessageCard,
+              {
+                msg,
+                currentPrincipal,
+                onLike: handleLike,
+                onDislike: handleDislike,
+                onShill: handleShill,
+                onFud: handleFud,
+                onDelete: handleDelete,
+                onReply: handleReply
+              }
+            ),
+            replies.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-2 space-y-2 pl-2", children: replies.map((reply) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+              MessageCard,
+              {
+                msg: reply,
+                currentPrincipal,
+                onLike: handleLike,
+                onDislike: handleDislike,
+                onShill: handleShill,
+                onFud: handleFud,
+                onDelete: handleDelete,
+                onReply: handleReply,
+                isReply: true
+              },
+              reply.id.toString()
+            )) }),
+            isAuthenticated && isReplyOpen && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-2 pl-2", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+              ComposeArea,
+              {
+                onPost: (content, imgKey, rId, preview) => handlePost(content, imgKey, rId, preview),
+                isPosting,
+                replyToId: msg.id,
+                replyToAuthor: replyToAuthor ?? void 0,
+                onCancelReply: () => {
+                  setReplyOpenForMsgId(null);
+                  setReplyToId(null);
+                  setReplyToAuthor(null);
+                },
+                placeholder: `Reply to ${replyToAuthor ?? "user"}…`,
+                compact: true
+              }
+            ) })
+          ]
+        },
+        msg.id.toString()
+      );
+    }) }),
+    !isLoading && topLevel.length >= PAGE_SIZE && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex justify-center pt-2", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "button",
+      {
+        type: "button",
+        onClick: handleLoadMore,
+        className: "px-4 py-2 rounded-lg border border-border text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors",
+        "data-ocid": "chat.load_more_button",
+        children: "Load earlier messages"
+      }
+    ) })
   ] });
 }
 function timeAgo(publishedAt) {
@@ -49851,62 +51338,43 @@ function InvestmentTracker({
   const gainLoss = currentValue - invested;
   const hasData = invested > 0;
   const breakEvenPrice = invested > 0 && icpAmount > 0 ? invested / icpAmount : null;
+  const debounceRef = reactExports.useRef(null);
   function handleInputChange(e3) {
     const val = e3.target.value;
-    if (val === "" || /^\d*\.?\d*$/.test(val)) {
+    const stripped = val.replace(/,/g, "");
+    if (stripped === "" || /^\d*\.?\d*$/.test(stripped)) {
       setInputValue(val);
-    }
-  }
-  function handleSave() {
-    const num = Number.parseFloat(inputValue);
-    if (Number.isNaN(num) || num < 0) {
-      ue.error("Invalid amount", {
-        description: `Please enter a valid ${currency} amount.`
-      });
-      return;
-    }
-    saveAmount(num, {
-      onSuccess: () => {
-        setInvested(num);
-        ue.success("Invested amount saved");
-      },
-      onError: () => {
-        ue.error("Failed to save", { description: "Please try again." });
+      const num = Number.parseFloat(stripped);
+      if (!Number.isNaN(num) && num >= 0) {
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+        debounceRef.current = setTimeout(() => {
+          saveAmount(num, {
+            onSuccess: () => setInvested(num),
+            onError: () => ue.error("Failed to save invested amount", {
+              description: "Please try again."
+            })
+          });
+        }, 800);
       }
-    });
+    }
   }
   const gainLossColor = !hasData || currentValue === 0 ? "text-muted-foreground" : gainLoss > 0 ? "text-emerald-400" : gainLoss < 0 ? "text-destructive" : "text-muted-foreground";
-  const InvestedInput = /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "relative flex-1", children: [
-      /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "absolute left-2.5 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none select-none font-mono", children: sym }),
-      /* @__PURE__ */ jsxRuntimeExports.jsx(
-        "input",
-        {
-          type: "text",
-          inputMode: "decimal",
-          placeholder: "0.00",
-          value: inputValue,
-          onChange: handleInputChange,
-          className: "input-field pl-7",
-          "aria-label": `Amount invested in ${currency}`,
-          "data-ocid": "investment_tracker.input"
-        }
-      )
-    ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsxs(
-      "button",
+  const InvestedInput = /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "relative", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "absolute left-2.5 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none select-none font-mono", children: sym }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "input",
       {
-        type: "button",
-        onClick: handleSave,
-        disabled: isPending || isLoading,
-        className: "flex items-center gap-1.5 px-3 py-2 rounded-lg bg-accent text-accent-foreground text-xs font-semibold hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed transition-smooth shrink-0",
-        "data-ocid": "investment_tracker.save_button",
-        children: [
-          isPending ? /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "w-3 h-3 rounded-full border-2 border-accent-foreground/30 border-t-accent-foreground animate-spin" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(Save, { className: "w-3.5 h-3.5" }),
-          "Save"
-        ]
+        type: "text",
+        inputMode: "decimal",
+        placeholder: "0.00",
+        value: inputValue,
+        onChange: handleInputChange,
+        className: "input-field pl-7 pr-8 w-full",
+        "aria-label": `Amount invested in ${currency}`,
+        "data-ocid": "investment_tracker.input"
       }
-    )
+    ),
+    isPending && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin" })
   ] });
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(
     "div",
@@ -50056,7 +51524,7 @@ function InvestmentTracker({
                     children: [
                       "Enter your invested ",
                       currency,
-                      " amount and save."
+                      " amount above."
                     ]
                   }
                 )
@@ -50087,7 +51555,7 @@ function LoginScreen() {
               /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col items-center gap-4", children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-16 h-16 rounded-2xl bg-accent/20 border border-accent/30 flex items-center justify-center shadow-lg", children: /* @__PURE__ */ jsxRuntimeExports.jsx(TrendingUp, { className: "w-8 h-8 text-accent" }) }),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "font-display text-2xl font-bold text-foreground tracking-tight", children: "ICP Value Tracker" }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "font-display text-2xl font-bold text-foreground tracking-tight", children: "ICP Pulse" }),
                   /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-muted-foreground mt-1", children: "Track your ICP portfolio with live prices & market data" })
                 ] })
               ] }),
@@ -73965,6 +75433,32 @@ function App() {
     clear();
     queryClient2.clear();
   };
+  const isCanisterStopped = useCanisterStopped();
+  const [bannerDismissed, setBannerDismissed] = reactExports.useState(false);
+  const prevCanisterStopped = reactExports.useRef(false);
+  reactExports.useEffect(() => {
+    if (isCanisterStopped && !prevCanisterStopped.current) {
+      setBannerDismissed(false);
+    }
+    if (!isCanisterStopped && prevCanisterStopped.current) {
+      setBannerDismissed(true);
+      ue.success("Service restored — reloading your data", {
+        duration: 4e3,
+        icon: /* @__PURE__ */ jsxRuntimeExports.jsx(CircleCheck, { className: "w-4 h-4 text-emerald-400" })
+      });
+    }
+    prevCanisterStopped.current = isCanisterStopped;
+  }, [isCanisterStopped]);
+  const showBanner = isCanisterStopped && !bannerDismissed;
+  const { data: cyclesBalance } = useCyclesBalance();
+  const [cyclesDismissed, setCyclesDismissed] = reactExports.useState(() => {
+    return sessionStorage.getItem("cyclesWarningDismissed") === "1";
+  });
+  const handleDismissCycles = () => {
+    sessionStorage.setItem("cyclesWarningDismissed", "1");
+    setCyclesDismissed(true);
+  };
+  const showCyclesWarning = isAuthenticated && !cyclesDismissed && (cyclesBalance === 0n || cyclesBalance === null && isCanisterStopped);
   const {
     data: price,
     isLoading,
@@ -74103,10 +75597,11 @@ function App() {
   if (!isAuthenticated) {
     return /* @__PURE__ */ jsxRuntimeExports.jsx(LoginScreen, {});
   }
-  const abbrevPrincipal = principalStr ? `${principalStr.slice(0, 5)}…${principalStr.slice(-4)}` : null;
+  const abbrevPrincipal2 = principalStr ? `${principalStr.slice(0, 5)}…${principalStr.slice(-4)}` : null;
   const tabs = [
     { id: "tracker", label: "Value Tracker" },
     { id: "exit", label: "Exit Strategy" },
+    { id: "chat", label: "Community Chat" },
     { id: "news", label: "ICP News" },
     { id: "history", label: "Historical Data" },
     { id: "about", label: "About" },
@@ -74118,56 +75613,188 @@ function App() {
       className: "min-h-screen bg-background flex flex-col",
       "data-ocid": "app.page",
       children: [
-        /* @__PURE__ */ jsxRuntimeExports.jsx("header", { className: "bg-card border-b border-border px-6 py-4 shadow-subtle", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "max-w-5xl mx-auto flex items-center justify-between gap-3", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2.5", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-7 h-7 rounded-md bg-accent/20 border border-accent/30 flex items-center justify-center", children: /* @__PURE__ */ jsxRuntimeExports.jsx(TrendingUp, { className: "w-4 h-4 text-accent" }) }),
-            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-display font-semibold text-foreground tracking-tight", children: "ICP Value Tracker" }),
-            baseCurrency !== "USD" && /* @__PURE__ */ jsxRuntimeExports.jsxs(
-              "span",
-              {
-                className: "inline-flex items-center text-[10px] font-bold uppercase tracking-wider bg-primary/15 text-primary border border-primary/30 rounded px-1.5 py-0.5",
-                title: `Displaying values in ${baseCurrency}`,
-                "data-ocid": "header.currency_badge",
-                children: [
-                  currencySymbol,
-                  " ",
-                  baseCurrency
-                ]
-              }
-            )
-          ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx(
-                "div",
+        /* @__PURE__ */ jsxRuntimeExports.jsxs("header", { className: "relative bg-card border-b border-border px-6 py-4 shadow-subtle", children: [
+          /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "max-w-5xl mx-auto flex items-center justify-between gap-3", children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2.5", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-7 h-7 rounded-md bg-accent/20 border border-accent/30 flex items-center justify-center", children: /* @__PURE__ */ jsxRuntimeExports.jsx(TrendingUp, { className: "w-4 h-4 text-accent" }) }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-display font-semibold text-foreground tracking-tight", children: "ICP Pulse" }),
+              baseCurrency !== "USD" && /* @__PURE__ */ jsxRuntimeExports.jsxs(
+                "span",
                 {
-                  className: `w-2 h-2 rounded-full ${isLoading || isFetching ? "bg-amber-400 animate-pulse" : isError && price ? "bg-amber-400" : isError ? "bg-destructive" : (price == null ? void 0 : price.isStale) ? "bg-amber-400" : "bg-emerald-400"}`
+                  className: "inline-flex items-center text-[10px] font-bold uppercase tracking-wider bg-primary/15 text-primary border border-primary/30 rounded px-1.5 py-0.5",
+                  title: `Displaying values in ${baseCurrency}`,
+                  "data-ocid": "header.currency_badge",
+                  children: [
+                    currencySymbol,
+                    " ",
+                    baseCurrency
+                  ]
+                }
+              )
+            ] }),
+            /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "div",
+                  {
+                    className: `w-2 h-2 rounded-full ${isLoading || isFetching ? "bg-amber-400 animate-pulse" : isError && price ? "bg-amber-400" : isError ? "bg-destructive" : (price == null ? void 0 : price.isStale) ? "bg-amber-400" : "bg-emerald-400"}`
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs text-muted-foreground hidden sm:inline", children: isLoading || isFetching ? "Fetching…" : isError && price ? "Last Known" : isError ? "Unavailable" : (price == null ? void 0 : price.isStale) ? "Stale" : "Live" })
+              ] }),
+              abbrevPrincipal2 && /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "span",
+                {
+                  className: "hidden sm:inline text-xs font-mono bg-muted px-2 py-1 rounded border border-border text-muted-foreground",
+                  title: principalStr ?? void 0,
+                  "data-ocid": "header.principal",
+                  children: abbrevPrincipal2
                 }
               ),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs text-muted-foreground hidden sm:inline", children: isLoading || isFetching ? "Fetching…" : isError && price ? "Last Known" : isError ? "Unavailable" : (price == null ? void 0 : price.isStale) ? "Stale" : "Live" })
-            ] }),
-            abbrevPrincipal && /* @__PURE__ */ jsxRuntimeExports.jsx(
-              "span",
-              {
-                className: "hidden sm:inline text-xs font-mono bg-muted px-2 py-1 rounded border border-border text-muted-foreground",
-                title: principalStr ?? void 0,
-                "data-ocid": "header.principal",
-                children: abbrevPrincipal
-              }
-            ),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(SettingsPanel, {}),
-            /* @__PURE__ */ jsxRuntimeExports.jsx(
-              "button",
-              {
-                type: "button",
-                onClick: handleLogout,
-                className: "text-xs px-3 py-1.5 rounded-md border border-border bg-card hover:bg-muted text-muted-foreground hover:text-foreground transition-smooth",
-                "data-ocid": "header.logout_button",
-                children: "Log out"
-              }
-            )
-          ] })
-        ] }) }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(SettingsPanel, {}),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "button",
+                {
+                  type: "button",
+                  onClick: handleLogout,
+                  className: "text-xs px-3 py-1.5 rounded-md border border-border bg-card hover:bg-muted text-muted-foreground hover:text-foreground transition-smooth",
+                  "data-ocid": "header.logout_button",
+                  children: "Log out"
+                }
+              )
+            ] })
+          ] }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "span",
+            {
+              className: "absolute top-2 right-3 inline-flex items-center rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white shadow-sm",
+              "data-ocid": "header.beta_badge",
+              children: "beta"
+            }
+          )
+        ] }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(AnimatePresence, { children: showCyclesWarning && /* @__PURE__ */ jsxRuntimeExports.jsx(
+          motion.div,
+          {
+            initial: { opacity: 0, y: -8 },
+            animate: { opacity: 1, y: 0 },
+            exit: { opacity: 0, y: -8 },
+            transition: { duration: 0.2 },
+            className: "relative bg-yellow-400/15 border-b border-yellow-400/40 px-6 py-2.5",
+            "data-ocid": "cycles_warning.banner",
+            "aria-live": "polite",
+            children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "max-w-5xl mx-auto flex items-center justify-between gap-3", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-start sm:items-center gap-2.5 min-w-0 flex-wrap", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "span",
+                  {
+                    className: "text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5 sm:mt-0",
+                    "aria-hidden": "true",
+                    children: "⚠️"
+                  }
+                ),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-xs text-yellow-800 dark:text-yellow-300 leading-relaxed", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-semibold", children: "Canister cycles may be running low" }),
+                  " — this can cause the service to stop. ",
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    "a",
+                    {
+                      href: "https://nns.ic0.app",
+                      target: "_blank",
+                      rel: "noopener noreferrer",
+                      className: "underline underline-offset-2 hover:text-yellow-900 dark:hover:text-yellow-100 transition-colors duration-150 font-medium",
+                      "data-ocid": "cycles_warning.nns_link",
+                      children: "Top up via NNS app"
+                    }
+                  ),
+                  " to keep it running.",
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "hidden sm:inline text-yellow-700/70 dark:text-yellow-400/70", children: [
+                    " Canister ID: ",
+                    /* @__PURE__ */ jsxRuntimeExports.jsx(
+                      "button",
+                      {
+                        type: "button",
+                        className: "font-mono text-[11px] bg-yellow-300/30 dark:bg-yellow-500/20 px-1 py-0.5 rounded cursor-pointer hover:bg-yellow-300/50 dark:hover:bg-yellow-500/30 transition-colors duration-150 select-all",
+                        title: "Click to copy canister ID",
+                        "data-ocid": "cycles_warning.canister_id",
+                        onClick: () => {
+                          navigator.clipboard.writeText("7542p-siaaa-aaaab-qbyxq-cai").then(() => {
+                            ue.success("Canister ID copied!", {
+                              duration: 2e3
+                            });
+                          });
+                        },
+                        children: "7542p-siaaa-aaaab-qbyxq-cai"
+                      }
+                    )
+                  ] })
+                ] })
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "button",
+                {
+                  type: "button",
+                  onClick: handleDismissCycles,
+                  className: "flex-shrink-0 p-1 rounded-md text-yellow-700/70 dark:text-yellow-400/70 hover:text-yellow-900 dark:hover:text-yellow-200 hover:bg-yellow-400/20 transition-colors duration-150",
+                  "aria-label": "Dismiss cycles warning",
+                  "data-ocid": "cycles_warning.close_button",
+                  children: /* @__PURE__ */ jsxRuntimeExports.jsx(X, { className: "w-3.5 h-3.5" })
+                }
+              )
+            ] })
+          },
+          "cycles-warning"
+        ) }),
+        /* @__PURE__ */ jsxRuntimeExports.jsx(AnimatePresence, { children: showBanner && /* @__PURE__ */ jsxRuntimeExports.jsx(
+          motion.div,
+          {
+            initial: { opacity: 0, y: -8 },
+            animate: { opacity: 1, y: 0 },
+            exit: { opacity: 0, y: -8 },
+            transition: { duration: 0.2 },
+            className: "relative bg-amber-500/15 border-b border-amber-500/30 px-6 py-3",
+            "data-ocid": "canister_stopped.banner",
+            role: "alert",
+            "aria-live": "polite",
+            children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "max-w-5xl mx-auto flex items-center justify-between gap-3", children: [
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3 min-w-0", children: [
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "relative flex-shrink-0", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-60 animate-ping" }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(TriangleAlert, { className: "relative w-4 h-4 text-amber-500" })
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-sm font-medium text-amber-700 dark:text-amber-300 leading-snug", children: [
+                  "Service temporarily unavailable",
+                  /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "hidden sm:inline text-amber-600/80 dark:text-amber-400/80 font-normal", children: [
+                    " ",
+                    "— your data will reload automatically when the service restores."
+                  ] })
+                ] }),
+                /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "hidden md:flex items-center gap-1.5 text-xs text-amber-600/70 dark:text-amber-400/70 flex-shrink-0", children: [
+                  /* @__PURE__ */ jsxRuntimeExports.jsx(
+                    RefreshCw,
+                    {
+                      className: "w-3 h-3 animate-spin",
+                      style: { animationDuration: "2s" }
+                    }
+                  ),
+                  "Retrying…"
+                ] })
+              ] }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx(
+                "button",
+                {
+                  type: "button",
+                  onClick: () => setBannerDismissed(true),
+                  className: "flex-shrink-0 p-1 rounded-md text-amber-600/70 dark:text-amber-400/70 hover:text-amber-700 dark:hover:text-amber-300 hover:bg-amber-500/20 transition-colors duration-150",
+                  "aria-label": "Dismiss service unavailable banner",
+                  "data-ocid": "canister_stopped.close_button",
+                  children: /* @__PURE__ */ jsxRuntimeExports.jsx(X, { className: "w-4 h-4" })
+                }
+              )
+            ] })
+          },
+          "canister-banner"
+        ) }),
         /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "bg-card border-b border-border px-6", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "max-w-5xl mx-auto", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex gap-1", role: "tablist", "data-ocid": "tabs.nav", children: tabs.map((tab) => /* @__PURE__ */ jsxRuntimeExports.jsxs(
           "button",
           {
@@ -74503,6 +76130,14 @@ function App() {
                   refreshInterval
                 }
               )
+            }
+          ),
+          /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "div",
+            {
+              className: activeTab !== "chat" ? "hidden" : "max-w-5xl mx-auto",
+              "data-ocid": "chat.tab.section",
+              children: /* @__PURE__ */ jsxRuntimeExports.jsx(ICPCommunityChat, {})
             }
           ),
           /* @__PURE__ */ jsxRuntimeExports.jsx(

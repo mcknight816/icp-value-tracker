@@ -33,6 +33,28 @@ export const Announcement = IDL.Record({
   'createdAt' : IDL.Int,
   'updatedAt' : IDL.Int,
 });
+export const UrlPreview = IDL.Record({
+  'url' : IDL.Text,
+  'title' : IDL.Text,
+  'thumbnailUrl' : IDL.Text,
+  'description' : IDL.Text,
+});
+export const ChatMessage = IDL.Record({
+  'id' : IDL.Nat,
+  'tab' : IDL.Text,
+  'isDeleted' : IDL.Bool,
+  'content' : IDL.Text,
+  'shills' : IDL.Vec(IDL.Principal),
+  'fuds' : IDL.Vec(IDL.Principal),
+  'authorName' : IDL.Text,
+  'likes' : IDL.Vec(IDL.Principal),
+  'imageKey' : IDL.Opt(IDL.Text),
+  'timestamp' : IDL.Int,
+  'replyToId' : IDL.Opt(IDL.Nat),
+  'dislikes' : IDL.Vec(IDL.Principal),
+  'authorPrincipal' : IDL.Principal,
+  'urlPreview' : IDL.Opt(UrlPreview),
+});
 export const FearGreedResult = IDL.Record({
   'fetchedAt' : IDL.Int,
   'labelText' : IDL.Text,
@@ -131,6 +153,11 @@ export const idlService = IDL.Service({
       [],
     ),
   'deleteAnnouncement' : IDL.Func([IDL.Nat], [IDL.Bool], []),
+  'deleteChatMessage' : IDL.Func(
+      [IDL.Nat],
+      [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+      [],
+    ),
   'deletePortfolioRecord' : IDL.Func([], [], []),
   'deleteUserSettings' : IDL.Func([], [], []),
   'fetchAndStoreMarketData' : IDL.Func([], [], []),
@@ -140,7 +167,13 @@ export const idlService = IDL.Service({
   'getAdminICPBalance' : IDL.Func([], [IDL.Text], []),
   'getAllAnnouncements' : IDL.Func([], [IDL.Vec(Announcement)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+  'getChatMessages' : IDL.Func(
+      [IDL.Nat, IDL.Nat],
+      [IDL.Vec(ChatMessage)],
+      ['query'],
+    ),
   'getCurrentFearGreed' : IDL.Func([], [IDL.Opt(FearGreedResult)], ['query']),
+  'getCyclesBalance' : IDL.Func([], [IDL.Nat], ['query']),
   'getDonationAddress' : IDL.Func([], [IDL.Text], ['query']),
   'getExecutionHistory' : IDL.Func([], [IDL.Vec(ExecutionRecord)], ['query']),
   'getICP24hStats' : IDL.Func([], [IDL.Opt(ICP24hStats)], []),
@@ -163,6 +196,11 @@ export const idlService = IDL.Service({
   'getSocialTrending' : IDL.Func([], [SocialTrendingResult], []),
   'getUserSettings' : IDL.Func([], [UserSettings], ['query']),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+  'postChatMessage' : IDL.Func(
+      [IDL.Text, IDL.Opt(IDL.Text), IDL.Opt(IDL.Nat), IDL.Opt(UrlPreview)],
+      [IDL.Variant({ 'ok' : ChatMessage, 'err' : IDL.Text })],
+      [],
+    ),
   'saveExecutionRecord' : IDL.Func([ExecutionRecord], [], []),
   'savePortfolioRecord' : IDL.Func(
       [IDL.Float64, IDL.Float64, IDL.Vec(PriceTarget)],
@@ -188,6 +226,16 @@ export const idlService = IDL.Service({
       [],
     ),
   'toggleAnnouncementPublished' : IDL.Func([IDL.Nat], [IDL.Bool], []),
+  'toggleChatLike' : IDL.Func(
+      [IDL.Nat, IDL.Bool],
+      [IDL.Variant({ 'ok' : ChatMessage, 'err' : IDL.Text })],
+      [],
+    ),
+  'toggleChatShill' : IDL.Func(
+      [IDL.Nat, IDL.Bool],
+      [IDL.Variant({ 'ok' : ChatMessage, 'err' : IDL.Text })],
+      [],
+    ),
   'transformAdminBalance' : IDL.Func(
       [TransformationInput],
       [TransformationOutput],
@@ -283,6 +331,28 @@ export const idlFactory = ({ IDL }) => {
     'createdAt' : IDL.Int,
     'updatedAt' : IDL.Int,
   });
+  const UrlPreview = IDL.Record({
+    'url' : IDL.Text,
+    'title' : IDL.Text,
+    'thumbnailUrl' : IDL.Text,
+    'description' : IDL.Text,
+  });
+  const ChatMessage = IDL.Record({
+    'id' : IDL.Nat,
+    'tab' : IDL.Text,
+    'isDeleted' : IDL.Bool,
+    'content' : IDL.Text,
+    'shills' : IDL.Vec(IDL.Principal),
+    'fuds' : IDL.Vec(IDL.Principal),
+    'authorName' : IDL.Text,
+    'likes' : IDL.Vec(IDL.Principal),
+    'imageKey' : IDL.Opt(IDL.Text),
+    'timestamp' : IDL.Int,
+    'replyToId' : IDL.Opt(IDL.Nat),
+    'dislikes' : IDL.Vec(IDL.Principal),
+    'authorPrincipal' : IDL.Principal,
+    'urlPreview' : IDL.Opt(UrlPreview),
+  });
   const FearGreedResult = IDL.Record({
     'fetchedAt' : IDL.Int,
     'labelText' : IDL.Text,
@@ -375,6 +445,11 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'deleteAnnouncement' : IDL.Func([IDL.Nat], [IDL.Bool], []),
+    'deleteChatMessage' : IDL.Func(
+        [IDL.Nat],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
     'deletePortfolioRecord' : IDL.Func([], [], []),
     'deleteUserSettings' : IDL.Func([], [], []),
     'fetchAndStoreMarketData' : IDL.Func([], [], []),
@@ -384,7 +459,13 @@ export const idlFactory = ({ IDL }) => {
     'getAdminICPBalance' : IDL.Func([], [IDL.Text], []),
     'getAllAnnouncements' : IDL.Func([], [IDL.Vec(Announcement)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+    'getChatMessages' : IDL.Func(
+        [IDL.Nat, IDL.Nat],
+        [IDL.Vec(ChatMessage)],
+        ['query'],
+      ),
     'getCurrentFearGreed' : IDL.Func([], [IDL.Opt(FearGreedResult)], ['query']),
+    'getCyclesBalance' : IDL.Func([], [IDL.Nat], ['query']),
     'getDonationAddress' : IDL.Func([], [IDL.Text], ['query']),
     'getExecutionHistory' : IDL.Func([], [IDL.Vec(ExecutionRecord)], ['query']),
     'getICP24hStats' : IDL.Func([], [IDL.Opt(ICP24hStats)], []),
@@ -407,6 +488,11 @@ export const idlFactory = ({ IDL }) => {
     'getSocialTrending' : IDL.Func([], [SocialTrendingResult], []),
     'getUserSettings' : IDL.Func([], [UserSettings], ['query']),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+    'postChatMessage' : IDL.Func(
+        [IDL.Text, IDL.Opt(IDL.Text), IDL.Opt(IDL.Nat), IDL.Opt(UrlPreview)],
+        [IDL.Variant({ 'ok' : ChatMessage, 'err' : IDL.Text })],
+        [],
+      ),
     'saveExecutionRecord' : IDL.Func([ExecutionRecord], [], []),
     'savePortfolioRecord' : IDL.Func(
         [IDL.Float64, IDL.Float64, IDL.Vec(PriceTarget)],
@@ -432,6 +518,16 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'toggleAnnouncementPublished' : IDL.Func([IDL.Nat], [IDL.Bool], []),
+    'toggleChatLike' : IDL.Func(
+        [IDL.Nat, IDL.Bool],
+        [IDL.Variant({ 'ok' : ChatMessage, 'err' : IDL.Text })],
+        [],
+      ),
+    'toggleChatShill' : IDL.Func(
+        [IDL.Nat, IDL.Bool],
+        [IDL.Variant({ 'ok' : ChatMessage, 'err' : IDL.Text })],
+        [],
+      ),
     'transformAdminBalance' : IDL.Func(
         [TransformationInput],
         [TransformationOutput],

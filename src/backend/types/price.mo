@@ -127,4 +127,29 @@ module {
     createdAt : Int;
     updatedAt : Int;
   };
+  /// Rich link preview data extracted from a URL posted in chat.
+  public type UrlPreview = {
+    url : Text;
+    title : Text;
+    description : Text;
+    thumbnailUrl : Text;
+  };
+
+  /// A single message in the ICP Community Chat.
+  public type ChatMessage = {
+    id : Nat;
+    authorPrincipal : Principal;
+    authorName : Text;
+    content : Text;
+    imageKey : ?Text;         // object-storage key; frontend uploads the file and passes the key
+    likes : [Principal];
+    dislikes : [Principal];
+    shills : [Principal];     // users who marked this message as Shill
+    fuds : [Principal];       // users who marked this message as FUD
+    replyToId : ?Nat;
+    timestamp : Int;          // nanoseconds (Time.now())
+    isDeleted : Bool;
+    tab : Text;               // computed: "shills" | "fud" | "icp" — derived from reaction counts
+    urlPreview : ?UrlPreview; // optional rich link preview (YouTube thumbnail, etc.)
+  };
 };

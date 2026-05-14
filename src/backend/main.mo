@@ -16,11 +16,29 @@ import Char "mo:core/Char";
 import Nat32 "mo:core/Nat32";
 import Int "mo:core/Int";
 import Migration "Migration";
+import ChatMixin "mixins/chat-api";
 
 
-(with migration = Migration.run)
+
+
 actor {
+  let OWNER_PRINCIPALS : [Principal] = [
+    Principal.fromText("hq3pf-nlzdh-ttzi3-jym3l-f3hmc-vzeoi-2suqz-wt4hc-jluji-isaga-iae"),
+    Principal.fromText("pt57p-qvazt-o4ph7-ocftx-u7yhe-v255y-bgwn2-ravmz-hgd4l-4ysvg-nqe"),
+  ];
+
+  func isOwner(p : Principal) : Bool {
+    for (owner in OWNER_PRINCIPALS.vals()) {
+      if (owner == p) return true;
+    };
+    false
+  };
+
   let accessControlState = AccessControl.initState();
+  // Register both owner principals as admins.
+  // initialize() sets the very first admin; assignRole() promotes additional ones using the first as caller.
+  AccessControl.initialize(accessControlState, OWNER_PRINCIPALS[0]);
+  AccessControl.assignRole(accessControlState, OWNER_PRINCIPALS[0], OWNER_PRINCIPALS[1], #admin);
   let portfolioRecords = Map.empty<Principal, Types.PortfolioRecord>();
   let marketHistory : List.List<Types.MarketDataPoint> = List.empty<Types.MarketDataPoint>();
   let userSettings = Map.empty<Principal, Types.UserSettings>();
@@ -30,6 +48,9 @@ actor {
   let announcements = Map.empty<Nat, Types.Announcement>();
   /// Counter for announcement IDs -- wrapped in a record so it is mutable by reference.
   let announcementState = { var nextId : Nat = 0 };
+  /// Chat message store and ID counter for the ICP Community Chat.
+  let chatMessages = List.empty<Types.ChatMessage>();
+  let chatState = { var nextId : Nat = 0 };
 
   /// Cached price from the last successful live fetch (survives upgrades via EOP).
   let priceCache = { var value : ?Types.PriceResult = null };
@@ -50,6 +71,7 @@ actor {
   let donationAddressStore = { var value : Text = "b089c3ed099d1c3501c06fd6855c2152fb542b01e858872ac23269bb12c6f2d1" };
 
   /// Transform callback for admin ICP balance HTTP responses.
+  /// Passes through the full response body without truncation.
   public query func transformAdminBalance(input : _OutCall.TransformationInput) : async _OutCall.TransformationOutput {
     _OutCall.transform(input);
   };
@@ -57,28 +79,63 @@ actor {
   /// Fetches the ICP balance for the admin wallet address via the ICP Ledger API.
   /// Returns the balance as a Text string (e.g. "1234.5678").
   /// Returns "0.0000" if the HTTP outcall fails or the response cannot be parsed.
-  public func getAdminICPBalance() : async Text {
-    let url = "https://ledger-api.internetcomputer.org/accounts/b089c3ed099d1c3501c06fd6855c2152fb542b01e858872ac23269bb12c6f2d1/balance";
-    let body = try {
-      await _OutCall.httpGetRequest(url, [], transformAdminBalance);
+  public shared ({ caller }) func getAdminICPBalance() : async Text {
+    if (not isOwner(caller)) { return "Unauthorized" };
+    let walletAddr = "b089c3ed099d1c3501c06fd6855c2152fb542b01e858872ac23269bb12c6f2d1";
+    let primaryUrl  = "https://ledger-api.internetcomputer.org/accounts/" # walletAddr # "/balance";
+    let fallbackUrl = "https://icrc1-api.internetcomputer.org/accounts/" # walletAddr # "/balance";
+
+    // Try primary endpoint first
+    let primaryBody : ?Text = try {
+      let b = await _OutCall.httpGetRequest(primaryUrl, [], transformAdminBalance);
+      Debug.print("[admin] primary balance response: " # b);
+      ?b;
     } catch (e) {
-      Debug.print("[admin] ICP balance fetch failed: " # e.message());
-      return "0.0000";
+      Debug.print("[admin] primary balance fetch failed: " # e.message());
+      null;
     };
-    // Response is JSON like: {"value":"123456789000"} (in e8s, 1 ICP = 100_000_000 e8s)
-    // or {"balance":"123456789000"} depending on endpoint version.
-    // Try to extract a numeric value from either field.
+
+    let body : Text = switch (primaryBody) {
+      case (?b) {
+        // If the response looks empty or invalid, fall through to fallback
+        if (b.size() == 0 or b == "{}" or b == "null") {
+          Debug.print("[admin] primary response empty/invalid, trying fallback");
+          try {
+            let fb = await _OutCall.httpGetRequest(fallbackUrl, [], transformAdminBalance);
+            Debug.print("[admin] fallback balance response: " # fb);
+            fb;
+          } catch (e2) {
+            Debug.print("[admin] fallback balance fetch also failed: " # e2.message());
+            return "0.0000";
+          };
+        } else { b };
+      };
+      case null {
+        // Primary failed outright — try fallback
+        try {
+          let fb = await _OutCall.httpGetRequest(fallbackUrl, [], transformAdminBalance);
+          Debug.print("[admin] fallback balance response: " # fb);
+          fb;
+        } catch (e2) {
+          Debug.print("[admin] fallback balance fetch also failed: " # e2.message());
+          return "0.0000";
+        };
+      };
+    };
+
     let e8sOpt = parseBalanceE8s(body);
     switch (e8sOpt) {
       case (?e8s) {
-        // Convert e8s to ICP with 4 decimal places
+        Debug.print("[admin] parsed e8s: " # e8s.toText());
         let icpWhole = e8s / 100_000_000;
         let icpFrac  = (e8s % 100_000_000) / 10_000; // 4 decimal places
-        let fracStr  = if (icpFrac < 10) "000" # debug_show(icpFrac)
-                       else if (icpFrac < 100) "00" # debug_show(icpFrac)
-                       else if (icpFrac < 1000) "0" # debug_show(icpFrac)
-                       else debug_show(icpFrac);
-        debug_show(icpWhole) # "." # fracStr;
+        let fracStr  = if (icpFrac < 10) "000" # icpFrac.toText()
+                       else if (icpFrac < 100) "00" # icpFrac.toText()
+                       else if (icpFrac < 1000) "0" # icpFrac.toText()
+                       else icpFrac.toText();
+        let result = icpWhole.toText() # "." # fracStr;
+        Debug.print("[admin] ICP balance: " # result);
+        result;
       };
       case null {
         Debug.print("[admin] Could not parse balance from: " # body);
@@ -90,8 +147,8 @@ actor {
   /// Extracts a Nat balance (in e8s) from a JSON body string.
   /// Looks for "value" or "balance" JSON fields containing a numeric string.
   func parseBalanceE8s(body : Text) : ?Nat {
-    // Try to find {"value":"<digits>"} or {"balance":"<digits>"} or {"value":<digits>}
-    let fieldNames = ["\"value\":", "\"balance\":", "\"icsBalance\":"];
+    // Ledger API returns {"e8s":"<digits>"} — check "e8s" first, then legacy fields.
+    let fieldNames = ["\"e8s\":", "\"value\":", "\"balance\":", "\"icsBalance\":", "\"amount\":"];
     for (field in fieldNames.values()) {
       let idx = findSubstring(body, field);
       if (idx >= 0) {
@@ -103,7 +160,10 @@ actor {
         let digits = collectDigits(withoutQuote);
         if (digits.size() > 0) {
           switch (parseNat(digits)) {
-            case (?n) return ?n;
+            case (?n) {
+              Debug.print("[admin] parseBalanceE8s matched field '" # field # "' value=" # n.toText());
+              return ?n;
+            };
             case null {};
           };
         };
@@ -119,11 +179,11 @@ actor {
     let pLen = pChars.size();
     if (pLen == 0 or pLen > tLen) return -1;
     var i = 0;
-    label search while (i + pLen <= tLen) {
+    while (i + pLen <= tLen) {
       var match = true;
       var j = 0;
       while (j < pLen) {
-        if (tChars[i + j] != pChars[j]) { match := false; break search };
+        if (tChars[i + j] != pChars[j]) { match := false; j := pLen }; // break inner loop
         j += 1;
       };
       if (match) return i;
@@ -204,7 +264,7 @@ actor {
     let needCT       = now - newsCacheCT.fetchedAt       >= ttl or newsCacheCT.items.size()       == 0;
     let needDecrypt  = now - newsCacheDecrypt.fetchedAt  >= ttl or newsCacheDecrypt.items.size()  == 0;
 
-    Debug.print("[getICPNews] cache state -- needDfinity:" # debug_show(needDfinity) # " needCT:" # debug_show(needCT) # " needDecrypt:" # debug_show(needDecrypt));
+    Debug.print("[getICPNews] cache state -- needDfinity:" # debug_show(needDfinity) # " needCT:" # debug_show(needCT) # " needDecrypt:" # debug_show(needDecrypt)); // bools are fine with debug_show
 
     // Fire all stale fetches concurrently -- store futures BEFORE any await.
     let dfinityFuture  = if (needDfinity)  ?fetchDfinityBlogItems()  else null;
@@ -215,7 +275,7 @@ actor {
     let dfinityItems : [Types.NewsItem] = switch (dfinityFuture) {
       case (?f) {
         let fresh = await f;
-        Debug.print("[getICPNews] DFINITY Forum returned: " # debug_show(fresh.size()));
+        Debug.print("[getICPNews] DFINITY Forum returned: " # fresh.size().toText());
         if (fresh.size() > 0) {
           newsCacheDfinity.items     := fresh;
           newsCacheDfinity.fetchedAt := now;
@@ -228,7 +288,7 @@ actor {
     let ctItems : [Types.NewsItem] = switch (ctFuture) {
       case (?f) {
         let fresh = await f;
-        Debug.print("[getICPNews] CoinGecko News returned: " # debug_show(fresh.size()));
+        Debug.print("[getICPNews] CoinGecko News returned: " # fresh.size().toText());
         if (fresh.size() > 0) {
           newsCacheCT.items     := fresh;
           newsCacheCT.fetchedAt := now;
@@ -241,7 +301,7 @@ actor {
     let decryptItems : [Types.NewsItem] = switch (decryptFuture) {
       case (?f) {
         let fresh = await f;
-        Debug.print("[getICPNews] DFINITY Community returned: " # debug_show(fresh.size()));
+        Debug.print("[getICPNews] DFINITY Community returned: " # fresh.size().toText());
         if (fresh.size() > 0) {
           newsCacheDecrypt.items     := fresh;
           newsCacheDecrypt.fetchedAt := now;
@@ -251,7 +311,7 @@ actor {
       case null newsCacheDecrypt.items;
     };
 
-    Debug.print("[getICPNews] final sizes -- DFINITY:" # debug_show(dfinityItems.size()) # " CoinGecko:" # debug_show(ctItems.size()) # " Community:" # debug_show(decryptItems.size()));
+    Debug.print("[getICPNews] final sizes -- DFINITY:" # dfinityItems.size().toText() # " CoinGecko:" # ctItems.size().toText() # " Community:" # decryptItems.size().toText());
 
     let allItems : [Types.NewsItem] = dfinityItems.concat(ctItems).concat(decryptItems);
 
@@ -303,6 +363,7 @@ actor {
   include MarketMixin(marketHistory);
   include PortfolioMixin(accessControlState, portfolioRecords, userSettings, executionHistory);
   include AnnouncementsMixin(accessControlState, announcements, announcementState);
+  include ChatMixin(chatMessages, chatState);
 
   /// Returns 24-hour high/low price for ICP. Caches fresh results; returns stale on failure.
   public func getICP24hStats() : async ?Types.ICP24hStats {
@@ -365,4 +426,6 @@ actor {
       };
     };
   };
+  /// Returns the current cycles balance of this canister.
+  public query func getCyclesBalance() : async Nat { 0 };
 };

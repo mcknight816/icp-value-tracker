@@ -1,4 +1,4 @@
-// Version: 3.0.0
+// Version: 1.0.0
 type AnnouncementType__296806448 = {#general; #market_tip; #system_notice};
 type Announcement__598886070 =
   {
@@ -9,6 +9,23 @@ type Announcement__598886070 =
     isPublished : Bool;
     title : Text;
     updatedAt : Int
+  };
+type ChatMessage__31140917 =
+  {
+    authorName : Text;
+    authorPrincipal : Principal;
+    content : Text;
+    dislikes : [Principal];
+    fuds : [Principal];
+    id : Nat;
+    imageKey : ?Text;
+    isDeleted : Bool;
+    likes : [Principal];
+    replyToId : ?Nat;
+    shills : [Principal];
+    tab : Text;
+    timestamp : Int;
+    urlPreview : ?UrlPreview__1056702287
   };
 type Data__791452850<K, V> =
   {var count : Nat__490723111; kvs : [var ?(K, V)]};
@@ -43,31 +60,6 @@ type NewsItem__1016571300 =
   {publishedAt : Text; source : Text; title : Text; url : Text};
 type Node__46230540<K, V> =
   {#internal : Internal__8484328<K, V>; #leaf : Leaf__809889148<K, V>};
-type OldPortfolioRecord__740199743 =
-  {
-    icpAmount : Float;
-    investedAmount : Float;
-    priceTargets : [OldPriceTarget__796518500]
-  };
-type OldPriceTarget__796518500 =
-  {
-    icpAmount : Float;
-    id : Text;
-    notifyEmail : ?Text;
-    notifyViaEmail : Bool;
-    notifyViaPhone : Bool;
-    targetPrice : Float;
-    tokensToSell : Float;
-    triggered : Bool
-  };
-type OldUserSettings__138787562 =
-  {
-    baseCurrency : ?Text;
-    email : ?Text;
-    language : ?Text;
-    phone : ?Text;
-    theme : ?Text
-  };
 type PortfolioRecord__888508526 =
   {
     icpAmount : Float;
@@ -89,6 +81,8 @@ type PriceTarget__538492711 =
   };
 type SocialTrendingResult__184477071 =
   {fetchedAt : Int; isStale : Bool; score : Float};
+type UrlPreview__1056702287 =
+  {description : Text; thumbnailUrl : Text; title : Text; url : Text};
 type UserRole__1073662873 = {#admin; #guest; #user};
 type UserSettings__892154084 =
   {
@@ -100,7 +94,8 @@ type UserSettings__892154084 =
     phone : ?Text;
     theme : ?Text
   };
-actor ({
+actor {
+  stable OWNER_PRINCIPALS : [Principal];
   stable accessControlState :
     {
       var adminAssigned : Bool;
@@ -112,48 +107,13 @@ actor ({
       var root : Node__46230540<Nat, Announcement__598886070>;
       var size : Nat__490723111
     };
-  stable defaultPortfolioRecord :
-    {
-      icpAmount : Float;
-      investedAmount : Float;
-      priceTargets : [PriceTarget__538492711]
-    };
-  stable donationAddressStore : {var value : Text};
-  stable executionHistory :
-    {
-      var root : Node__46230540<Principal, [ExecutionRecord__438854543]>;
-      var size : Nat__490723111
-    };
-  stable marketHistory :
+  stable chatMessages :
     {
       var blockIndex : Nat__490723111;
-      var blocks : [var [var ?MarketDataPoint__131852019]];
+      var blocks : [var [var ?ChatMessage__31140917]];
       var elementIndex : Nat__490723111
     };
-  stable newsCacheCT :
-    {var fetchedAt : Int; var items : [NewsItem__1016571300]};
-  stable newsCacheDecrypt :
-    {var fetchedAt : Int; var items : [NewsItem__1016571300]};
-  stable newsCacheDfinity :
-    {var fetchedAt : Int; var items : [NewsItem__1016571300]};
-  in portfolioRecords :
-    Map__605269027<Principal, OldPortfolioRecord__740199743>;
-  stable priceCache : {var value : ?PriceResult__385336602};
-  stable socialCache : {var value : ?SocialTrendingResult__184477071};
-  stable stats24hCache : {var value : ?ICP24hStats__642978945};
-  in userSettings : Map__605269027<Principal, OldUserSettings__138787562>
-}, {
-  stable accessControlState :
-    {
-      var adminAssigned : Bool;
-      userRoles : Map__605269027<Principal, UserRole__1073662873>
-    };
-  stable announcementState : {var nextId : Nat};
-  stable announcements :
-    {
-      var root : Node__46230540<Nat, Announcement__598886070>;
-      var size : Nat__490723111
-    };
+  stable chatState : {var nextId : Nat};
   stable defaultPortfolioRecord :
     {
       icpAmount : Float;
@@ -191,4 +151,4 @@ actor ({
       var root : Node__46230540<Principal, UserSettings__892154084>;
       var size : Nat__490723111
     }
-});
+};

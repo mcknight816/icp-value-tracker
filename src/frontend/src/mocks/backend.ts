@@ -97,7 +97,9 @@ export const mockBackend: backendInterface = {
     headers: input.response.headers,
   }),
   getUserSettings: async () => ({}),
-  saveUserSettings: async (_email: string | null, _phone: string | null, _theme: string | null, _baseCurrency: string | null, _language: string | null) => {},
+  saveUserSettings: async (_email: string | null, _phone: string | null, _theme: string | null, _baseCurrency: string | null, _language: string | null, _notifyEmail: boolean | null, _notifyPhone: boolean | null) => {},
+  deletePortfolioRecord: async () => {},
+  deleteUserSettings: async () => {},
   getExecutionHistory: async () => [],
   saveExecutionRecord: async (_record: import('@/backend').ExecutionRecord) => {},
   getICP24hStats: async () => ({
@@ -162,4 +164,11 @@ export const mockBackend: backendInterface = {
     body: input.response.body,
     headers: input.response.headers,
   }),
+  // ─── Community Chat ───────────────────────────────────────────────────────
+  getChatMessages: async (_limit: bigint, _offset: bigint): Promise<Array<import('@/backend').ChatMessage>> => [],
+  postChatMessage: async (_content: string, _imageKey: string | null, _replyToId: bigint | null, _urlPreview: import('@/backend').UrlPreview | null) => ({ __kind__: 'ok' as const, ok: { id: 1n, tab: 'icp', isDeleted: false, content: _content, authorName: 'Mock User', likes: [], dislikes: [], shills: [], fuds: [], timestamp: BigInt(Date.now() * 1_000_000), authorPrincipal: {} as import('@icp-sdk/core/principal').Principal, urlPreview: undefined } }),
+  toggleChatLike: async (_messageId: bigint, _isLike: boolean) => ({ __kind__: 'ok' as const, ok: { id: _messageId, tab: 'icp', isDeleted: false, content: '', authorName: 'Mock User', likes: [], dislikes: [], shills: [], fuds: [], timestamp: BigInt(Date.now() * 1_000_000), authorPrincipal: {} as import('@icp-sdk/core/principal').Principal, urlPreview: undefined, replyToId: undefined } }),
+  toggleChatShill: async (_messageId: bigint, _isShill: boolean) => ({ __kind__: 'ok' as const, ok: { id: _messageId, tab: 'icp', isDeleted: false, content: '', authorName: 'Mock User', likes: [], dislikes: [], shills: [], fuds: [], timestamp: BigInt(Date.now() * 1_000_000), authorPrincipal: {} as import('@icp-sdk/core/principal').Principal, urlPreview: undefined, replyToId: undefined } }),
+  deleteChatMessage: async (_messageId: bigint) => ({ __kind__: 'ok' as const, ok: null }),
+  getCyclesBalance: async (): Promise<bigint> => 0n,
 };

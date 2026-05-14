@@ -1,4 +1,4 @@
-import { type PortfolioRecord, createActor } from "@/backend";
+import { type ChatMessage, createActor } from "@/backend";
 import type {
   Announcement,
   AnnouncementType,
@@ -8,6 +8,7 @@ import type {
   ICP24hStats,
   MarketDataPoint,
   NewsItem,
+  PortfolioRecord,
   PriceResult,
   PriceTarget,
   PriceVolumePoint,
@@ -33,81 +34,126 @@ export const FALLBACK_DONATION_ADDRESS =
 export function useBackendActor(): { actor: Backend | null; isReady: boolean } {
   const { identity } = useInternetIdentity();
   const identityKey = identity?.getPrincipal().toString() ?? "anon";
+
+  // Keep identity in a ref so the async loop always sees the current value,
+  // even if React batched a re-render after the effect started.
+  const identityRef = useRef(identity);
+  identityRef.current = identity;
+
   const [state, setState] = useState<{
     actor: Backend | null;
     isReady: boolean;
   }>({ actor: null, isReady: false });
-  const builtForRef = useRef<string | null>(null);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: identity is captured via identityKey; retries are managed internally
+  // Track which identityKey the current actor was built for — avoids
+  // rebuilding when the same identity fires the effect multiple times.
+  const builtForRef = useRef<string | null>(null);
+  // Tracks whether we are currently inside a tryInit loop so we don't
+  // start a second loop while one is already running.
+  const initRunningRef = useRef(false);
+
   useEffect(() => {
-    if (builtForRef.current === identityKey && state.actor !== null) return;
+    // Exact same key AND we already have a valid actor → nothing to do.
+    if (builtForRef.current === identityKey && !initRunningRef.current) {
+      // Check via ref, not stale state closure:
+      return;
+    }
+
+    // A new identity arrived — reset so the loop below runs fresh.
+    if (builtForRef.current !== identityKey) {
+      builtForRef.current = null;
+      setState({ actor: null, isReady: false });
+      console.log("[ACTOR INIT] identity changed, resetting actor", {
+        identityKey,
+      });
+    }
 
     let cancelled = false;
-    setState((prev) => ({ ...prev, isReady: false }));
+    initRunningRef.current = true;
 
-    async function tryInit() {
-      const maxAttempts = 30;
-      let attempts = 0;
+    async function tryInit(attempt = 1, maxAttempts = 30): Promise<void> {
+      if (cancelled) return;
 
-      while (attempts < maxAttempts && !cancelled) {
-        attempts++;
-        try {
-          // Fetch env.json fresh each attempt — platform injects canisterId at runtime
-          const envRes = await fetch(`/env.json?_=${Date.now()}`);
-          const env = (await envRes.json()) as Record<string, string>;
-          const canisterId =
-            env.backend_canister_id ||
-            env.CANISTER_ID_BACKEND ||
-            env.canister_id_backend ||
-            "";
+      try {
+        // Fetch env.json fresh — platform injects canisterId at runtime
+        const envRes = await fetch(`/env.json?_=${Date.now()}`);
+        const env = (await envRes.json()) as Record<string, string>;
+        const canisterId =
+          env.backend_canister_id ||
+          env.CANISTER_ID_BACKEND ||
+          env.canister_id_backend ||
+          "";
 
-          if (!canisterId || canisterId === "" || canisterId === "undefined") {
-            console.log(
-              `[ACTOR INIT] attempt ${attempts}/${maxAttempts}: canisterId empty, retrying in 1s...`,
-            );
-            await new Promise((r) => setTimeout(r, 1000));
-            continue;
-          }
-
-          console.log(
-            `[ACTOR INIT] attempt ${attempts}: got canisterId ${canisterId}, creating actor...`,
-            { identityKey, hasIdentity: !!identity },
+        if (!canisterId || canisterId === "" || canisterId === "undefined") {
+          console.warn(
+            `[ACTOR INIT] attempt ${attempt}/${maxAttempts}: canisterId empty, retrying in 1s…`,
           );
-          const actorOptions = identity
-            ? { agentOptions: { identity } }
-            : undefined;
-          const newActor = await createActorWithConfig(
-            createActor,
-            actorOptions,
-          );
-          console.log("[ACTOR INIT] actor created successfully", {
-            actor: !!newActor,
-          });
           if (!cancelled) {
-            builtForRef.current = identityKey;
-            setState({ actor: newActor as unknown as Backend, isReady: true });
+            await new Promise((r) => setTimeout(r, 1000));
+            return tryInit(attempt + 1, maxAttempts);
           }
           return;
-        } catch (err) {
-          console.error(`[ACTOR INIT] attempt ${attempts} failed:`, err);
-          if (attempts < maxAttempts && !cancelled) {
-            await new Promise((r) => setTimeout(r, 1000));
-          }
         }
-      }
 
-      if (!cancelled) {
-        console.error(
-          "[ACTOR INIT] exhausted all attempts — actor remains null",
+        // Use the ref so we always get the latest identity, even after batched renders
+        const currentIdentity = identityRef.current;
+        console.log(
+          `[ACTOR INIT] attempt ${attempt}: canisterId ${canisterId}, creating actor…`,
+          { identityKey, hasIdentity: !!currentIdentity },
         );
+
+        const actorOptions = currentIdentity
+          ? { agentOptions: { identity: currentIdentity } }
+          : undefined;
+
+        const newActor = await createActorWithConfig(createActor, actorOptions);
+        console.log("[ACTOR INIT] actor created successfully", {
+          actor: !!newActor,
+          identityKey,
+        });
+
+        if (!cancelled) {
+          builtForRef.current = identityKey;
+          initRunningRef.current = false;
+          setState({ actor: newActor as unknown as Backend, isReady: true });
+        }
+        return;
+      } catch (err) {
+        console.error(`[ACTOR INIT] attempt ${attempt} failed:`, err);
+
+        if (cancelled) return;
+
+        if (attempt < maxAttempts) {
+          await new Promise((r) => setTimeout(r, 1000));
+          return tryInit(attempt + 1, maxAttempts);
+        }
+
+        // Exhausted all attempts — surface isReady so the UI doesn't spin
+        // forever, but schedule a recovery retry after 10s.
+        console.error(
+          "[ACTOR INIT] exhausted all attempts — setting isReady with null actor. Will retry in 10s.",
+        );
+        initRunningRef.current = false;
         setState({ actor: null, isReady: true });
+
+        // Recovery: clear the built-for key so the next scheduled retry
+        // triggers a fresh init loop.
+        setTimeout(() => {
+          if (!cancelled) {
+            console.warn("[ACTOR INIT] recovery retry — resetting builtForRef");
+            builtForRef.current = null;
+            setState({ actor: null, isReady: false });
+            initRunningRef.current = true;
+            tryInit(1, maxAttempts);
+          }
+        }, 10_000);
       }
     }
 
     tryInit();
     return () => {
       cancelled = true;
+      initRunningRef.current = false;
     };
   }, [identityKey]);
 
@@ -120,6 +166,75 @@ function isCanisterStoppedError(e: unknown): boolean {
     msg.includes("canister stopped") ||
     msg.includes("reject_code: 5")
   );
+}
+
+// ─── Canister stopped signal ─────────────────────────────────────────────────
+// Module-level listeners so any hook can notify App.tsx when IC0508 is detected
+type CanisterStatusListener = (stopped: boolean) => void;
+const _canisterStatusListeners = new Set<CanisterStatusListener>();
+let _isCanisterStopped = false;
+
+function notifyCanisterStopped(stopped: boolean) {
+  if (_isCanisterStopped === stopped) return; // no change
+  _isCanisterStopped = stopped;
+  for (const listener of _canisterStatusListeners) listener(stopped);
+}
+
+/** Call inside any queryFn catch when isCanisterStoppedError is true. */
+export function reportCanisterStopped(): void {
+  notifyCanisterStopped(true);
+}
+
+/** Call when a query succeeds to clear the stopped flag. */
+export function reportCanisterOnline(): void {
+  notifyCanisterStopped(false);
+}
+
+/** React hook — returns true when any hook has seen an IC0508 error. */
+export function useCanisterStopped(): boolean {
+  const [stopped, setStopped] = useState<boolean>(_isCanisterStopped);
+  useEffect(() => {
+    const listener: CanisterStatusListener = (s) => setStopped(s);
+    _canisterStatusListeners.add(listener);
+    // Sync in case flag changed before we subscribed
+    setStopped(_isCanisterStopped);
+    return () => {
+      _canisterStatusListeners.delete(listener);
+    };
+  }, []);
+  return stopped;
+}
+
+/**
+ * useCyclesBalance — polls the canister's cycles balance every 60 seconds.
+ * The backend returns 0 as a stub (real cycles balance isn't available in user-land Motoko).
+ * Returns null if the call throws (e.g. canister stopped).
+ */
+export function useCyclesBalance() {
+  const { actor, isReady } = useBackendActor();
+  const { identity } = useInternetIdentity();
+  const principal = identity?.getPrincipal().toString() ?? null;
+  return useQuery<bigint | null>({
+    queryKey: ["cyclesBalance", principal],
+    queryFn: async () => {
+      if (!actor) return null;
+      try {
+        const balance = await actor.getCyclesBalance();
+        return balance;
+      } catch (e) {
+        if (isCanisterStoppedError(e)) {
+          console.warn("[CYCLES] canister stopped — returning null");
+          return null;
+        }
+        console.error("[CYCLES] getCyclesBalance error", e);
+        return null;
+      }
+    },
+    enabled: isReady && !!actor,
+    refetchInterval: 60_000,
+    staleTime: 55_000,
+    retry: 1,
+  });
 }
 
 // Module-level cache so the last successful price survives query errors
@@ -160,6 +275,7 @@ export function useICPPrice(refetchInterval = 60_000) {
             fetchedAt: result.ok.fetchedAt?.toString(),
           });
           _lastKnownPrice = result.ok;
+          reportCanisterOnline();
           return result.ok;
         }
         console.error("[QUERY ERROR] useICPPrice — backend returned err kind", {
@@ -175,6 +291,7 @@ export function useICPPrice(refetchInterval = 60_000) {
           console.warn(
             "[QUERY WARN] useICPPrice — canister stopped, returning last known price",
           );
+          reportCanisterStopped();
           return _lastKnownPrice;
         }
         const msg = e instanceof Error ? e.message : String(e);
@@ -326,11 +443,17 @@ export function useMarketHistory(refetchInterval = 60_000) {
  * All three values are fetched and written together as one atomic backend record.
  */
 export function usePortfolioRecord(refetchInterval = 60_000) {
-  const { actor } = useBackendActor();
+  // Gate on BOTH actor existence AND isReady so we don't fire before init completes
+  const { actor, isReady } = useBackendActor();
   const { identity } = useInternetIdentity();
   const principal = identity?.getPrincipal().toString() ?? null;
-  // CRITICAL: enabled ONLY on actor — never gated on price data or any HTTP outcall result
-  const enabled = !!actor;
+  const enabled = isReady && !!actor;
+  console.log("[PORTFOLIO] usePortfolioRecord", {
+    actor: !!actor,
+    isReady,
+    enabled,
+    principal,
+  });
   return useQuery<PortfolioRecord>({
     queryKey: ["portfolioRecord", principal],
     queryFn: async () => {
@@ -342,10 +465,12 @@ export function usePortfolioRecord(refetchInterval = 60_000) {
           investedAmount: record.investedAmount,
           priceTargetsCount: record.priceTargets.length,
         });
+        reportCanisterOnline();
         return record;
       } catch (e) {
         if (isCanisterStoppedError(e)) {
           console.warn("[PORTFOLIO] canister stopped, returning safe defaults");
+          reportCanisterStopped();
           return { icpAmount: 0, investedAmount: 0, priceTargets: [] };
         }
         console.error("[PORTFOLIO] load error", {
@@ -526,15 +651,16 @@ export function useSavePriceTargets() {
 }
 
 export function useUserSettings(refetchInterval = 60_000) {
-  const { actor } = useBackendActor();
+  // Gate on BOTH actor existence AND isReady so we don't fire before init completes
+  const { actor, isReady } = useBackendActor();
   const { identity } = useInternetIdentity();
   const principal = identity?.getPrincipal().toString() ?? null;
-  // CRITICAL: enabled ONLY on actor — never gated on isAuthenticated or any HTTP result
-  const enabled = !!actor;
-  console.log("[ACTOR] useUserSettings", {
+  const enabled = isReady && !!actor;
+  console.log("[SETTINGS] useUserSettings", {
     actor: !!actor,
-    principal,
+    isReady,
     enabled,
+    principal,
   });
 
   const DEFAULT_SETTINGS: UserSettings & {
@@ -570,10 +696,12 @@ export function useUserSettings(refetchInterval = 60_000) {
         if (result.language) {
           setLanguage(result.language as import("@/i18n").LangCode);
         }
+        reportCanisterOnline();
         return result;
       } catch (e) {
         if (isCanisterStoppedError(e)) {
           console.warn("[SETTINGS] canister stopped, returning defaults");
+          reportCanisterStopped();
           return DEFAULT_SETTINGS;
         }
         console.error("[SETTINGS] load error", {
@@ -648,12 +776,16 @@ export function useSaveUserSettings() {
       theme,
       baseCurrency,
       language,
+      notifyEmail,
+      notifyPhone,
     }: {
       email?: string | null;
       phone?: string | null;
       theme?: string | null;
       baseCurrency?: string | null;
       language?: string | null;
+      notifyEmail?: boolean | null;
+      notifyPhone?: boolean | null;
     }) => {
       if (!actor)
         throw new Error("Backend not ready — please wait and try again");
@@ -674,12 +806,22 @@ export function useSaveUserSettings() {
         language !== undefined
           ? (language ?? null)
           : (cached?.language ?? null);
+      const resolvedNotifyEmail: boolean | null =
+        notifyEmail !== undefined
+          ? (notifyEmail ?? null)
+          : (cached?.notifyEmail ?? null);
+      const resolvedNotifyPhone: boolean | null =
+        notifyPhone !== undefined
+          ? (notifyPhone ?? null)
+          : (cached?.notifyPhone ?? null);
       return actor.saveUserSettings(
         resolvedEmail,
         resolvedPhone,
         resolvedTheme,
         resolvedCurrency,
         resolvedLanguage,
+        resolvedNotifyEmail,
+        resolvedNotifyPhone,
       );
     },
     onSuccess: () => {
@@ -1279,3 +1421,128 @@ export function useSendTestEmail() {
 }
 
 export type { AnnouncementType, Announcement };
+
+// ─────────────────────────────────────────────
+// Chat hooks
+// ─────────────────────────────────────────────
+
+export function useChatMessages(limit = 20, offset = 0) {
+  const { actor, isReady } = useBackendActor();
+  console.log("[CHAT] useChatMessages", {
+    actor: !!actor,
+    isReady,
+    limit,
+    offset,
+  });
+  return useQuery<ChatMessage[]>({
+    queryKey: ["chatMessages", limit, offset],
+    queryFn: async () => {
+      console.log("[CHAT] fetching messages", { limit, offset });
+      if (!actor) {
+        console.log("[CHAT] actor not ready, returning []");
+        return [];
+      }
+      const result = await actor.getChatMessages(BigInt(limit), BigInt(offset));
+      console.log("[CHAT] fetched", result.length, "messages");
+      return result;
+    },
+    enabled: isReady && !!actor,
+    refetchInterval: 15_000,
+    staleTime: 10_000,
+    placeholderData: (prev) => prev ?? [],
+  });
+}
+
+export function usePostChatMessage() {
+  const { actor } = useBackendActor();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      content,
+      imageKey,
+      replyToId,
+      urlPreview,
+    }: {
+      content: string;
+      imageKey: string | null;
+      replyToId: bigint | null;
+      urlPreview?: import("@/backend").UrlPreview | null;
+    }): Promise<ChatMessage> => {
+      if (!actor)
+        throw new Error("Backend not ready — please wait and try again");
+      const result = await actor.postChatMessage(
+        content,
+        imageKey,
+        replyToId,
+        urlPreview ?? null,
+      );
+      if (result.__kind__ === "err") throw new Error(result.err);
+      return result.ok;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["chatMessages"] });
+    },
+  });
+}
+
+export function useToggleChatLike() {
+  const { actor } = useBackendActor();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      messageId,
+      isLike,
+    }: {
+      messageId: bigint;
+      isLike: boolean;
+    }): Promise<ChatMessage> => {
+      if (!actor)
+        throw new Error("Backend not ready — please wait and try again");
+      const result = await actor.toggleChatLike(messageId, isLike);
+      if (result.__kind__ === "err") throw new Error(result.err);
+      return result.ok;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["chatMessages"] });
+    },
+  });
+}
+
+export function useDeleteChatMessage() {
+  const { actor } = useBackendActor();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (messageId: bigint): Promise<void> => {
+      if (!actor)
+        throw new Error("Backend not ready — please wait and try again");
+      const result = await actor.deleteChatMessage(messageId);
+      if (result.__kind__ === "err") throw new Error(result.err);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["chatMessages"] });
+    },
+  });
+}
+
+export function useToggleChatShill() {
+  const { actor } = useBackendActor();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      messageId,
+      isShill,
+    }: {
+      messageId: bigint;
+      isShill: boolean;
+    }): Promise<ChatMessage> => {
+      if (!actor)
+        throw new Error("Backend not ready — please wait and try again");
+      const result = await actor.toggleChatShill(messageId, isShill);
+      if (result.__kind__ === "err") throw new Error(result.err);
+      return result.ok;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["chatMessages"] });
+    },
+  });
+}

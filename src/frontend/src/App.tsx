@@ -3,6 +3,7 @@ import { AdminTab } from "@/components/AdminTab";
 import { ExitStrategy } from "@/components/ExitStrategy";
 import { FearGreedGauge } from "@/components/FearGreedGauge";
 import { HistoryTable } from "@/components/HistoryTable";
+import { ICPCommunityChat } from "@/components/ICPCommunityChat";
 import { ICPNews } from "@/components/ICPNews";
 import { InvestmentTracker } from "@/components/InvestmentTracker";
 import { LoginScreen } from "@/components/LoginScreen";
@@ -17,6 +18,8 @@ import {
 } from "@/context/CurrencyContext";
 import {
   useBackendActor,
+  useCanisterStopped,
+  useCyclesBalance,
   useExchangeRates,
   useFearGreed,
   useICP24hStats,
@@ -34,13 +37,18 @@ import { useInternetIdentity } from "@caffeineai/core-infrastructure";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Activity,
+  AlertTriangle,
   ArrowDown,
   ArrowUp,
+  CheckCircle2,
+  MessageSquare,
   RefreshCw,
   TrendingUp,
+  X,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 const INTERVAL_OPTIONS = [
   { label: "30 seconds", value: 30_000 },
@@ -135,7 +143,7 @@ export default function App() {
   const queryClient = useQueryClient();
   const principalStr = identity?.getPrincipal().toString() ?? null;
   const [activeTab, setActiveTab] = useState<
-    "tracker" | "exit" | "news" | "history" | "about" | "admin"
+    "tracker" | "exit" | "chat" | "news" | "history" | "about" | "admin"
   >("tracker");
   const [refreshInterval, setRefreshInterval] =
     useState<number>(getStoredInterval);
@@ -154,6 +162,47 @@ export default function App() {
     clear();
     queryClient.clear();
   };
+
+  // ── Canister stopped banner ────────────────────────────────────────────────
+  const isCanisterStopped = useCanisterStopped();
+  const [bannerDismissed, setBannerDismissed] = useState(false);
+  const prevCanisterStopped = useRef(false);
+
+  // Re-show banner when canister goes stopped again after dismissal
+  useEffect(() => {
+    if (isCanisterStopped && !prevCanisterStopped.current) {
+      setBannerDismissed(false);
+    }
+    if (!isCanisterStopped && prevCanisterStopped.current) {
+      // Service just came back — show success toast then dismiss
+      setBannerDismissed(true);
+      toast.success("Service restored — reloading your data", {
+        duration: 4000,
+        icon: <CheckCircle2 className="w-4 h-4 text-emerald-400" />,
+      });
+    }
+    prevCanisterStopped.current = isCanisterStopped;
+  }, [isCanisterStopped]);
+
+  const showBanner = isCanisterStopped && !bannerDismissed;
+  // ── / Canister stopped banner ───────────────────────────────────────────────
+
+  // ── Low cycles warning bar ───────────────────────────────────────────────
+  const { data: cyclesBalance } = useCyclesBalance();
+  const [cyclesDismissed, setCyclesDismissed] = useState<boolean>(() => {
+    return sessionStorage.getItem("cyclesWarningDismissed") === "1";
+  });
+  const handleDismissCycles = () => {
+    sessionStorage.setItem("cyclesWarningDismissed", "1");
+    setCyclesDismissed(true);
+  };
+  // Show when: balance is 0 (stub/unknown) OR canister was recently stopped.
+  // Only show to authenticated users.
+  const showCyclesWarning =
+    isAuthenticated &&
+    !cyclesDismissed &&
+    (cyclesBalance === 0n || (cyclesBalance === null && isCanisterStopped));
+  // ── / Low cycles warning bar ─────────────────────────────────────────────
 
   const {
     data: price,
@@ -254,7 +303,7 @@ export default function App() {
   }, [isActorFetching, actor]);
 
   // Hydrate icpAmount from portfolio record (replaces direct actor.getICPAmount call)
-  // biome-ignore lint/correctness/useExhaustiveDependencies: portfolioRecord drives mount-once hydration
+
   useEffect(() => {
     if (hasMountedRef.current) return;
     if (isPortfolioLoading) return; // still loading
@@ -355,11 +404,12 @@ export default function App() {
     : null;
 
   const tabs: {
-    id: "tracker" | "exit" | "news" | "history" | "about" | "admin";
+    id: "tracker" | "exit" | "chat" | "news" | "history" | "about" | "admin";
     label: string;
   }[] = [
     { id: "tracker", label: "Value Tracker" },
     { id: "exit", label: "Exit Strategy" },
+    { id: "chat", label: "Community Chat" },
     { id: "news", label: "ICP News" },
     { id: "history", label: "Historical Data" },
     { id: "about", label: "About" },
@@ -372,14 +422,14 @@ export default function App() {
       data-ocid="app.page"
     >
       {/* Header */}
-      <header className="bg-card border-b border-border px-6 py-4 shadow-subtle">
+      <header className="relative bg-card border-b border-border px-6 py-4 shadow-subtle">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-md bg-accent/20 border border-accent/30 flex items-center justify-center">
               <TrendingUp className="w-4 h-4 text-accent" />
             </div>
             <span className="font-display font-semibold text-foreground tracking-tight">
-              ICP Value Tracker
+              ICP Pulse
             </span>
             {baseCurrency !== "USD" && (
               <span
@@ -438,7 +488,138 @@ export default function App() {
             </button>
           </div>
         </div>
+        {/* Beta pill — top-right corner of header */}
+        <span
+          className="absolute top-2 right-3 inline-flex items-center rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white shadow-sm"
+          data-ocid="header.beta_badge"
+        >
+          beta
+        </span>
       </header>
+
+      {/* Low cycles warning bar — shown above the canister-stopped banner */}
+      <AnimatePresence>
+        {showCyclesWarning && (
+          <motion.div
+            key="cycles-warning"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+            className="relative bg-yellow-400/15 border-b border-yellow-400/40 px-6 py-2.5"
+            data-ocid="cycles_warning.banner"
+            aria-live="polite"
+          >
+            <div className="max-w-5xl mx-auto flex items-center justify-between gap-3">
+              <div className="flex items-start sm:items-center gap-2.5 min-w-0 flex-wrap">
+                <span
+                  className="text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5 sm:mt-0"
+                  aria-hidden="true"
+                >
+                  ⚠️
+                </span>
+                <p className="text-xs text-yellow-800 dark:text-yellow-300 leading-relaxed">
+                  <span className="font-semibold">
+                    Canister cycles may be running low
+                  </span>
+                  {" — this can cause the service to stop. "}
+                  <a
+                    href="https://nns.ic0.app"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline underline-offset-2 hover:text-yellow-900 dark:hover:text-yellow-100 transition-colors duration-150 font-medium"
+                    data-ocid="cycles_warning.nns_link"
+                  >
+                    Top up via NNS app
+                  </a>
+                  {" to keep it running."}
+                  <span className="hidden sm:inline text-yellow-700/70 dark:text-yellow-400/70">
+                    {" Canister ID: "}
+                    <button
+                      type="button"
+                      className="font-mono text-[11px] bg-yellow-300/30 dark:bg-yellow-500/20 px-1 py-0.5 rounded cursor-pointer hover:bg-yellow-300/50 dark:hover:bg-yellow-500/30 transition-colors duration-150 select-all"
+                      title="Click to copy canister ID"
+                      data-ocid="cycles_warning.canister_id"
+                      onClick={() => {
+                        navigator.clipboard
+                          .writeText("7542p-siaaa-aaaab-qbyxq-cai")
+                          .then(() => {
+                            toast.success("Canister ID copied!", {
+                              duration: 2000,
+                            });
+                          });
+                      }}
+                    >
+                      7542p-siaaa-aaaab-qbyxq-cai
+                    </button>
+                  </span>
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleDismissCycles}
+                className="flex-shrink-0 p-1 rounded-md text-yellow-700/70 dark:text-yellow-400/70 hover:text-yellow-900 dark:hover:text-yellow-200 hover:bg-yellow-400/20 transition-colors duration-150"
+                aria-label="Dismiss cycles warning"
+                data-ocid="cycles_warning.close_button"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Canister stopped banner */}
+      <AnimatePresence>
+        {showBanner && (
+          <motion.div
+            key="canister-banner"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2 }}
+            className="relative bg-amber-500/15 border-b border-amber-500/30 px-6 py-3"
+            data-ocid="canister_stopped.banner"
+            role="alert"
+            aria-live="polite"
+          >
+            <div className="max-w-5xl mx-auto flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                {/* Pulsing amber dot */}
+                <span className="relative flex-shrink-0">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-60 animate-ping" />
+                  <AlertTriangle className="relative w-4 h-4 text-amber-500" />
+                </span>
+                <p className="text-sm font-medium text-amber-700 dark:text-amber-300 leading-snug">
+                  Service temporarily unavailable
+                  <span className="hidden sm:inline text-amber-600/80 dark:text-amber-400/80 font-normal">
+                    {" "}
+                    — your data will reload automatically when the service
+                    restores.
+                  </span>
+                </p>
+                {/* Animated retry indicator */}
+                <span className="hidden md:flex items-center gap-1.5 text-xs text-amber-600/70 dark:text-amber-400/70 flex-shrink-0">
+                  <RefreshCw
+                    className="w-3 h-3 animate-spin"
+                    style={{ animationDuration: "2s" }}
+                  />
+                  Retrying…
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setBannerDismissed(true)}
+                className="flex-shrink-0 p-1 rounded-md text-amber-600/70 dark:text-amber-400/70 hover:text-amber-700 dark:hover:text-amber-300 hover:bg-amber-500/20 transition-colors duration-150"
+                aria-label="Dismiss service unavailable banner"
+                data-ocid="canister_stopped.close_button"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Tab navigation */}
       <div className="bg-card border-b border-border px-6">
@@ -781,7 +962,15 @@ export default function App() {
             />
           </div>
 
-          {/* Tab 3: ICP News — always mounted so HTTP outcall starts on load */}
+          {/* Tab 3: Community Chat */}
+          <div
+            className={activeTab !== "chat" ? "hidden" : "max-w-5xl mx-auto"}
+            data-ocid="chat.tab.section"
+          >
+            <ICPCommunityChat />
+          </div>
+
+          {/* Tab 4: ICP News — always mounted so HTTP outcall starts on load */}
           <div
             className={activeTab !== "news" ? "hidden" : "max-w-5xl mx-auto"}
             data-ocid="news.tab.section"
@@ -789,7 +978,7 @@ export default function App() {
             <ICPNews refreshInterval={refreshInterval} />
           </div>
 
-          {/* Tab 4: Historical Data */}
+          {/* Tab 5: Historical Data */}
           <div
             className={activeTab !== "history" ? "hidden" : "max-w-5xl mx-auto"}
             data-ocid="history.section"

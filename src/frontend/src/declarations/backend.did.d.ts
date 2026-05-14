@@ -22,6 +22,22 @@ export interface Announcement {
 export type AnnouncementType = { 'market_tip' : null } |
   { 'system_notice' : null } |
   { 'general' : null };
+export interface ChatMessage {
+  'id' : bigint,
+  'tab' : string,
+  'isDeleted' : boolean,
+  'content' : string,
+  'shills' : Array<Principal>,
+  'fuds' : Array<Principal>,
+  'authorName' : string,
+  'likes' : Array<Principal>,
+  'imageKey' : [] | [string],
+  'timestamp' : bigint,
+  'replyToId' : [] | [bigint],
+  'dislikes' : Array<Principal>,
+  'authorPrincipal' : Principal,
+  'urlPreview' : [] | [UrlPreview],
+}
 export interface ExecutionRecord {
   'id' : string,
   'saleValue' : number,
@@ -95,6 +111,12 @@ export interface TransformationOutput {
   'body' : Uint8Array,
   'headers' : Array<http_header>,
 }
+export interface UrlPreview {
+  'url' : string,
+  'title' : string,
+  'thumbnailUrl' : string,
+  'description' : string,
+}
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
   { 'guest' : null };
@@ -121,7 +143,16 @@ export interface _SERVICE {
     [string, string, AnnouncementType],
     bigint
   >,
+  /**
+   * / Per-feed news caches (survive upgrades via EOP). Each feed is cached independently
+   * / so one failing feed does not evict another feed's previously good items.
+   */
   'deleteAnnouncement' : ActorMethod<[bigint], boolean>,
+  'deleteChatMessage' : ActorMethod<
+    [bigint],
+    { 'ok' : null } |
+      { 'err' : string }
+  >,
   'deletePortfolioRecord' : ActorMethod<[], undefined>,
   'deleteUserSettings' : ActorMethod<[], undefined>,
   'fetchAndStoreMarketData' : ActorMethod<[], undefined>,
@@ -136,7 +167,12 @@ export interface _SERVICE {
   'getAdminICPBalance' : ActorMethod<[], string>,
   'getAllAnnouncements' : ActorMethod<[], Array<Announcement>>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
+  'getChatMessages' : ActorMethod<[bigint, bigint], Array<ChatMessage>>,
   'getCurrentFearGreed' : ActorMethod<[], [] | [FearGreedResult]>,
+  /**
+   * / Returns the current cycles balance of this canister.
+   */
+  'getCyclesBalance' : ActorMethod<[], bigint>,
   /**
    * / Returns the ICP donation wallet address.
    */
@@ -161,9 +197,6 @@ export interface _SERVICE {
    * / price, or #err only when all sources fail and no cache is available.
    */
   'getICPPrice' : ActorMethod<[], PriceResponse>,
-  /**
-   * / Transform callback for admin ICP balance HTTP responses.
-   */
   'getICPPriceRaw' : ActorMethod<[], PriceResponse>,
   'getMarketChart' : ActorMethod<[bigint], Array<PriceVolumePoint>>,
   'getMarketHistory' : ActorMethod<[], Array<MarketDataPoint>>,
@@ -173,13 +206,24 @@ export interface _SERVICE {
    * / Returns the ICP social trending score (0-100). Caches result; returns stale on failure.
    */
   'getSocialTrending' : ActorMethod<[], SocialTrendingResult>,
+  /**
+   * / Cached 24-hour high/low stats (survives upgrades via EOP).
+   */
   'getUserSettings' : ActorMethod<[], UserSettings>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
+  'postChatMessage' : ActorMethod<
+    [string, [] | [string], [] | [bigint], [] | [UrlPreview]],
+    { 'ok' : ChatMessage } |
+      { 'err' : string }
+  >,
   'saveExecutionRecord' : ActorMethod<[ExecutionRecord], undefined>,
   'savePortfolioRecord' : ActorMethod<
     [number, number, Array<PriceTarget>],
     undefined
   >,
+  /**
+   * / Persistent announcements store (keyed by Nat id).
+   */
   'saveUserSettings' : ActorMethod<
     [
       [] | [string],
@@ -194,8 +238,19 @@ export interface _SERVICE {
   >,
   'sendTestEmail' : ActorMethod<[], { 'ok' : string } | { 'err' : string }>,
   'toggleAnnouncementPublished' : ActorMethod<[bigint], boolean>,
+  'toggleChatLike' : ActorMethod<
+    [bigint, boolean],
+    { 'ok' : ChatMessage } |
+      { 'err' : string }
+  >,
+  'toggleChatShill' : ActorMethod<
+    [bigint, boolean],
+    { 'ok' : ChatMessage } |
+      { 'err' : string }
+  >,
   /**
    * / Transform callback for admin ICP balance HTTP responses.
+   * / Passes through the full response body without truncation.
    */
   'transformAdminBalance' : ActorMethod<
     [TransformationInput],
@@ -238,16 +293,10 @@ export interface _SERVICE {
     [TransformationInput],
     TransformationOutput
   >,
-  /**
-   * / Counter for announcement IDs -- wrapped in a record so it is mutable by reference.
-   */
   'transformSocialStats' : ActorMethod<
     [TransformationInput],
     TransformationOutput
   >,
-  /**
-   * / Cached social trending score (survives upgrades via EOP).
-   */
   'updateAnnouncement' : ActorMethod<
     [bigint, string, string, AnnouncementType],
     boolean

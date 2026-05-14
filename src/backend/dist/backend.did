@@ -25,6 +25,13 @@ type UserRole =
    guest;
    user;
  };
+type UrlPreview = 
+ record {
+   description: text;
+   thumbnailUrl: text;
+   title: text;
+   url: text;
+ };
 type TransformationOutput = 
  record {
    body: blob;
@@ -113,6 +120,23 @@ type ExecutionRecord =
    targetPrice: float64;
    tokensSold: float64;
  };
+type ChatMessage = 
+ record {
+   authorName: text;
+   authorPrincipal: principal;
+   content: text;
+   dislikes: vec principal;
+   fuds: vec principal;
+   id: nat;
+   imageKey: opt text;
+   isDeleted: bool;
+   likes: vec principal;
+   replyToId: opt nat;
+   shills: vec principal;
+   tab: text;
+   timestamp: int;
+   urlPreview: opt UrlPreview;
+ };
 type AnnouncementType = 
  variant {
    general;
@@ -135,7 +159,13 @@ service : {
   checkAndTriggerAlerts: (currentPrice: float64) -> ();
   createAnnouncement: (title: text, body: text, announcementType:
    AnnouncementType) -> (nat);
+  /// Per-feed news caches (survive upgrades via EOP). Each feed is cached independently
+  /// so one failing feed does not evict another feed's previously good items.
   deleteAnnouncement: (id: nat) -> (bool);
+  deleteChatMessage: (messageId: nat) -> (variant {
+                                            err: text;
+                                            ok;
+                                          });
   deletePortfolioRecord: () -> ();
   deleteUserSettings: () -> ();
   fetchAndStoreMarketData: () -> ();
@@ -148,7 +178,10 @@ service : {
   getAdminICPBalance: () -> (text);
   getAllAnnouncements: () -> (vec Announcement) query;
   getCallerUserRole: () -> (UserRole) query;
+  getChatMessages: (limit: nat, offset: nat) -> (vec ChatMessage) query;
   getCurrentFearGreed: () -> (opt FearGreedResult) query;
+  /// Returns the current cycles balance of this canister.
+  getCyclesBalance: () -> (nat) query;
   /// Returns the ICP donation wallet address.
   getDonationAddress: () -> (text) query;
   getExecutionHistory: () -> (vec ExecutionRecord) query;
@@ -165,7 +198,6 @@ service : {
   /// Returns #ok with isStale=false on a live price, isStale=true for a cached stale
   /// price, or #err only when all sources fail and no cache is available.
   getICPPrice: () -> (PriceResponse);
-  /// Transform callback for admin ICP balance HTTP responses.
   getICPPriceRaw: () -> (PriceResponse);
   getMarketChart: (days: nat) -> (vec PriceVolumePoint) query;
   getMarketHistory: () -> (vec MarketDataPoint) query;
@@ -173,11 +205,18 @@ service : {
   getPublishedAnnouncements: () -> (vec Announcement) query;
   /// Returns the ICP social trending score (0-100). Caches result; returns stale on failure.
   getSocialTrending: () -> (SocialTrendingResult);
+  /// Cached 24-hour high/low stats (survives upgrades via EOP).
   getUserSettings: () -> (UserSettings) query;
   isCallerAdmin: () -> (bool) query;
+  postChatMessage: (content: text, imageKey: opt text, replyToId: opt nat,
+   urlPreview: opt UrlPreview) -> (variant {
+                                     err: text;
+                                     ok: ChatMessage;
+                                   });
   saveExecutionRecord: ("record": ExecutionRecord) -> ();
   savePortfolioRecord: (icpAmount: float64, investedAmount: float64,
    priceTargets: vec PriceTarget) -> ();
+  /// Persistent announcements store (keyed by Nat id).
   saveUserSettings: (email: opt text, phone: opt text, theme: opt text,
    baseCurrency: opt text, language: opt text, notifyEmail: opt bool,
    notifyPhone: opt bool) -> ();
@@ -186,7 +225,18 @@ service : {
                           ok: text;
                         });
   toggleAnnouncementPublished: (id: nat) -> (bool);
+  toggleChatLike: (messageId: nat, isLike: bool) ->
+   (variant {
+      err: text;
+      ok: ChatMessage;
+    });
+  toggleChatShill: (messageId: nat, isShill: bool) ->
+   (variant {
+      err: text;
+      ok: ChatMessage;
+    });
   /// Transform callback for admin ICP balance HTTP responses.
+  /// Passes through the full response body without truncation.
   transformAdminBalance: (input: TransformationInput) ->
    (TransformationOutput) query;
   transformBinance24h: (input: TransformationInput) ->
@@ -209,10 +259,8 @@ service : {
    (TransformationOutput) query;
   transformPriceCoinbase: (input: TransformationInput) ->
    (TransformationOutput) query;
-  /// Counter for announcement IDs -- wrapped in a record so it is mutable by reference.
   transformSocialStats: (input: TransformationInput) ->
    (TransformationOutput) query;
-  /// Cached social trending score (survives upgrades via EOP).
   updateAnnouncement: (id: nat, title: text, body: text, announcementType:
    AnnouncementType) -> (bool);
 }

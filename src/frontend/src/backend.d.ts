@@ -62,10 +62,11 @@ export interface PriceResult {
     source: string;
     priceUSD: number;
 }
-export interface PortfolioRecord {
-    priceTargets: Array<PriceTarget>;
-    investedAmount: number;
-    icpAmount: number;
+export interface UrlPreview {
+    url: string;
+    title: string;
+    thumbnailUrl: string;
+    description: string;
 }
 export type PriceResponse = {
     __kind__: "ok";
@@ -77,6 +78,11 @@ export type PriceResponse = {
 export interface TransformationInput {
     context: Uint8Array;
     response: http_request_result;
+}
+export interface PortfolioRecord {
+    priceTargets: Array<PriceTarget>;
+    investedAmount: number;
+    icpAmount: number;
 }
 export interface ICP24hStats {
     low: number;
@@ -93,6 +99,27 @@ export interface UserSettings {
     notifyEmail?: boolean;
     phone?: string;
 }
+export interface ChatMessage {
+    id: bigint;
+    tab: string;
+    isDeleted: boolean;
+    content: string;
+    shills: Array<Principal>;
+    fuds: Array<Principal>;
+    authorName: string;
+    likes: Array<Principal>;
+    imageKey?: string;
+    timestamp: bigint;
+    replyToId?: bigint;
+    dislikes: Array<Principal>;
+    authorPrincipal: Principal;
+    urlPreview?: UrlPreview;
+}
+export interface PriceVolumePoint {
+    volume24h: number;
+    timestamp: bigint;
+    priceUSD: number;
+}
 export interface Announcement {
     id: bigint;
     title: string;
@@ -101,11 +128,6 @@ export interface Announcement {
     body: string;
     createdAt: bigint;
     updatedAt: bigint;
-}
-export interface PriceVolumePoint {
-    volume24h: number;
-    timestamp: bigint;
-    priceUSD: number;
 }
 export interface SocialTrendingResult {
     isStale: boolean;
@@ -126,7 +148,18 @@ export interface backendInterface {
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     checkAndTriggerAlerts(currentPrice: number): Promise<void>;
     createAnnouncement(title: string, body: string, announcementType: AnnouncementType): Promise<bigint>;
+    /**
+     * / Per-feed news caches (survive upgrades via EOP). Each feed is cached independently
+     * / so one failing feed does not evict another feed's previously good items.
+     */
     deleteAnnouncement(id: bigint): Promise<boolean>;
+    deleteChatMessage(messageId: bigint): Promise<{
+        __kind__: "ok";
+        ok: null;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     deletePortfolioRecord(): Promise<void>;
     deleteUserSettings(): Promise<void>;
     fetchAndStoreMarketData(): Promise<void>;
@@ -141,7 +174,12 @@ export interface backendInterface {
     getAdminICPBalance(): Promise<string>;
     getAllAnnouncements(): Promise<Array<Announcement>>;
     getCallerUserRole(): Promise<UserRole>;
+    getChatMessages(limit: bigint, offset: bigint): Promise<Array<ChatMessage>>;
     getCurrentFearGreed(): Promise<FearGreedResult | null>;
+    /**
+     * / Returns the current cycles balance of this canister.
+     */
+    getCyclesBalance(): Promise<bigint>;
     /**
      * / Returns the ICP donation wallet address.
      */
@@ -166,9 +204,6 @@ export interface backendInterface {
      * / price, or #err only when all sources fail and no cache is available.
      */
     getICPPrice(): Promise<PriceResponse>;
-    /**
-     * / Transform callback for admin ICP balance HTTP responses.
-     */
     getICPPriceRaw(): Promise<PriceResponse>;
     getMarketChart(days: bigint): Promise<Array<PriceVolumePoint>>;
     getMarketHistory(): Promise<Array<MarketDataPoint>>;
@@ -178,10 +213,23 @@ export interface backendInterface {
      * / Returns the ICP social trending score (0-100). Caches result; returns stale on failure.
      */
     getSocialTrending(): Promise<SocialTrendingResult>;
+    /**
+     * / Cached 24-hour high/low stats (survives upgrades via EOP).
+     */
     getUserSettings(): Promise<UserSettings>;
     isCallerAdmin(): Promise<boolean>;
+    postChatMessage(content: string, imageKey: string | null, replyToId: bigint | null, urlPreview: UrlPreview | null): Promise<{
+        __kind__: "ok";
+        ok: ChatMessage;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     saveExecutionRecord(record: ExecutionRecord): Promise<void>;
     savePortfolioRecord(icpAmount: number, investedAmount: number, priceTargets: Array<PriceTarget>): Promise<void>;
+    /**
+     * / Persistent announcements store (keyed by Nat id).
+     */
     saveUserSettings(email: string | null, phone: string | null, theme: string | null, baseCurrency: string | null, language: string | null, notifyEmail: boolean | null, notifyPhone: boolean | null): Promise<void>;
     sendTestEmail(): Promise<{
         __kind__: "ok";
@@ -191,8 +239,23 @@ export interface backendInterface {
         err: string;
     }>;
     toggleAnnouncementPublished(id: bigint): Promise<boolean>;
+    toggleChatLike(messageId: bigint, isLike: boolean): Promise<{
+        __kind__: "ok";
+        ok: ChatMessage;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    toggleChatShill(messageId: bigint, isShill: boolean): Promise<{
+        __kind__: "ok";
+        ok: ChatMessage;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     /**
      * / Transform callback for admin ICP balance HTTP responses.
+     * / Passes through the full response body without truncation.
      */
     transformAdminBalance(input: TransformationInput): Promise<TransformationOutput>;
     transformBinance24h(input: TransformationInput): Promise<TransformationOutput>;
@@ -205,12 +268,6 @@ export interface backendInterface {
     transformPrice(input: TransformationInput): Promise<TransformationOutput>;
     transformPriceBinance(input: TransformationInput): Promise<TransformationOutput>;
     transformPriceCoinbase(input: TransformationInput): Promise<TransformationOutput>;
-    /**
-     * / Counter for announcement IDs -- wrapped in a record so it is mutable by reference.
-     */
     transformSocialStats(input: TransformationInput): Promise<TransformationOutput>;
-    /**
-     * / Cached social trending score (survives upgrades via EOP).
-     */
     updateAnnouncement(id: bigint, title: string, body: string, announcementType: AnnouncementType): Promise<boolean>;
 }

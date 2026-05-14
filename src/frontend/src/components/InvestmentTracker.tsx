@@ -4,8 +4,7 @@ import {
   getCurrencySymbol,
 } from "@/context/CurrencyContext";
 import { useInvestedAmount, useSaveInvestedAmount } from "@/hooks/useQueries";
-import { Save } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 interface InvestmentTrackerProps {
@@ -69,30 +68,27 @@ export function InvestmentTracker({
   const breakEvenPrice =
     invested > 0 && icpAmount > 0 ? invested / icpAmount : null;
 
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
     const val = e.target.value;
-    if (val === "" || /^\d*\.?\d*$/.test(val)) {
+    const stripped = val.replace(/,/g, "");
+    if (stripped === "" || /^\d*\.?\d*$/.test(stripped)) {
       setInputValue(val);
+      const num = Number.parseFloat(stripped);
+      if (!Number.isNaN(num) && num >= 0) {
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+        debounceRef.current = setTimeout(() => {
+          saveAmount(num, {
+            onSuccess: () => setInvested(num),
+            onError: () =>
+              toast.error("Failed to save invested amount", {
+                description: "Please try again.",
+              }),
+          });
+        }, 800);
+      }
     }
-  }
-
-  function handleSave() {
-    const num = Number.parseFloat(inputValue);
-    if (Number.isNaN(num) || num < 0) {
-      toast.error("Invalid amount", {
-        description: `Please enter a valid ${currency} amount.`,
-      });
-      return;
-    }
-    saveAmount(num, {
-      onSuccess: () => {
-        setInvested(num);
-        toast.success("Invested amount saved");
-      },
-      onError: () => {
-        toast.error("Failed to save", { description: "Please try again." });
-      },
-    });
   }
 
   const gainLossColor =
@@ -105,36 +101,23 @@ export function InvestmentTracker({
           : "text-muted-foreground";
 
   const InvestedInput = (
-    <div className="flex items-center gap-2">
-      <div className="relative flex-1">
-        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none select-none font-mono">
-          {sym}
-        </span>
-        <input
-          type="text"
-          inputMode="decimal"
-          placeholder="0.00"
-          value={inputValue}
-          onChange={handleInputChange}
-          className="input-field pl-7"
-          aria-label={`Amount invested in ${currency}`}
-          data-ocid="investment_tracker.input"
-        />
-      </div>
-      <button
-        type="button"
-        onClick={handleSave}
-        disabled={isPending || isLoading}
-        className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-accent text-accent-foreground text-xs font-semibold hover:bg-accent/90 disabled:opacity-50 disabled:cursor-not-allowed transition-smooth shrink-0"
-        data-ocid="investment_tracker.save_button"
-      >
-        {isPending ? (
-          <span className="w-3 h-3 rounded-full border-2 border-accent-foreground/30 border-t-accent-foreground animate-spin" />
-        ) : (
-          <Save className="w-3.5 h-3.5" />
-        )}
-        Save
-      </button>
+    <div className="relative">
+      <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-sm text-muted-foreground pointer-events-none select-none font-mono">
+        {sym}
+      </span>
+      <input
+        type="text"
+        inputMode="decimal"
+        placeholder="0.00"
+        value={inputValue}
+        onChange={handleInputChange}
+        className="input-field pl-7 pr-8 w-full"
+        aria-label={`Amount invested in ${currency}`}
+        data-ocid="investment_tracker.input"
+      />
+      {isPending && (
+        <span className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin" />
+      )}
     </div>
   );
 
@@ -292,7 +275,7 @@ export function InvestmentTracker({
               className="text-xs text-muted-foreground"
               data-ocid="investment_tracker.empty_state"
             >
-              Enter your invested {currency} amount and save.
+              Enter your invested {currency} amount above.
             </p>
           </div>
         )}

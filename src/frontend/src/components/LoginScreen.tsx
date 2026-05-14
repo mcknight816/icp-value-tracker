@@ -24,7 +24,7 @@ export function LoginScreen() {
           </div>
           <div>
             <h1 className="font-display text-2xl font-bold text-foreground tracking-tight">
-              ICP Value Tracker
+              ICP Pulse
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
               Track your ICP portfolio with live prices &amp; market data

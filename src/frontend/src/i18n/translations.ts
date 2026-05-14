@@ -100,7 +100,7 @@ export type TranslationKey =
 
 export const translations: Record<LangCode, Record<TranslationKey, string>> = {
   en: {
-    appTitle: "ICP Value Tracker",
+    appTitle: "ICP Pulse",
     valueTracker: "Value Tracker",
     exitStrategy: "Exit Strategy",
     icpNews: "ICP News",
@@ -180,7 +180,7 @@ export const translations: Record<LangCode, Record<TranslationKey, string>> = {
     currencyInfo:
       "All monetary values convert to this currency using live rates.",
     refreshInfo: "How often live prices and data auto-refresh.",
-    aboutTitle: "About ICP Value Tracker",
+    aboutTitle: "About ICP Pulse",
     donationAddress: "Donation Address",
     aboutDescription: "Support this app by donating ICP to keep it running.",
     adminPanel: "Admin Panel",
@@ -193,7 +193,7 @@ export const translations: Record<LangCode, Record<TranslationKey, string>> = {
     connectWallet: "Connect Wallet",
   },
   es: {
-    appTitle: "Rastreador ICP",
+    appTitle: "ICP Pulse",
     valueTracker: "Rastreador de Valor",
     exitStrategy: "Estrategia de Salida",
     icpNews: "Noticias ICP",
@@ -273,7 +273,7 @@ export const translations: Record<LangCode, Record<TranslationKey, string>> = {
       "Todos los valores se convierten a esta moneda con tasas en vivo.",
     refreshInfo:
       "Con qué frecuencia se actualizan automáticamente los precios.",
-    aboutTitle: "Acerca del Rastreador ICP",
+    aboutTitle: "Acerca de ICP Pulse",
     donationAddress: "Dirección de donación",
     aboutDescription: "Apoya esta app donando ICP para mantenerla activa.",
     adminPanel: "Panel de administrador",
@@ -286,7 +286,7 @@ export const translations: Record<LangCode, Record<TranslationKey, string>> = {
     connectWallet: "Conectar billetera",
   },
   fr: {
-    appTitle: "Suivi ICP",
+    appTitle: "ICP Pulse",
     valueTracker: "Suivi de valeur",
     exitStrategy: "Stratégie de sortie",
     icpNews: "Actualités ICP",
@@ -364,7 +364,7 @@ export const translations: Record<LangCode, Record<TranslationKey, string>> = {
       "Vos coordonnées sont utilisées pour les notifications de prix.",
     currencyInfo: "Toutes les valeurs sont converties dans cette devise.",
     refreshInfo: "Fréquence de rafraîchissement automatique des données.",
-    aboutTitle: "À propos du Suivi ICP",
+    aboutTitle: "À propos d'ICP Pulse",
     donationAddress: "Adresse de don",
     aboutDescription: "Soutenez cette app en faisant un don ICP.",
     adminPanel: "Panneau d'administration",
@@ -377,7 +377,7 @@ export const translations: Record<LangCode, Record<TranslationKey, string>> = {
     connectWallet: "Connecter le portefeuille",
   },
   de: {
-    appTitle: "ICP Wert-Tracker",
+    appTitle: "ICP Pulse",
     valueTracker: "Wert-Tracker",
     exitStrategy: "Ausstiegsstrategie",
     icpNews: "ICP Nachrichten",
@@ -456,7 +456,7 @@ export const translations: Record<LangCode, Record<TranslationKey, string>> = {
     currencyInfo:
       "Alle Werte werden mit Live-Kursen in diese Währung umgerechnet.",
     refreshInfo: "Wie oft Preise und Daten automatisch aktualisiert werden.",
-    aboutTitle: "Über den ICP Wert-Tracker",
+    aboutTitle: "Über ICP Pulse",
     donationAddress: "Spendenadresse",
     aboutDescription: "Unterstütze diese App mit einer ICP-Spende.",
     adminPanel: "Admin-Panel",
@@ -469,7 +469,7 @@ export const translations: Record<LangCode, Record<TranslationKey, string>> = {
     connectWallet: "Wallet verbinden",
   },
   zh: {
-    appTitle: "ICP 价值追踪器",
+    appTitle: "ICP Pulse",
     valueTracker: "价值追踪",
     exitStrategy: "退出策略",
     icpNews: "ICP 新闻",
@@ -546,7 +546,7 @@ export const translations: Record<LangCode, Record<TranslationKey, string>> = {
     notificationInfo: "您的联系方式用于退出策略标签的价格目标通知。",
     currencyInfo: "所有货币价值将使用实时汇率转换为此货币。",
     refreshInfo: "实时价格和数据自动刷新的频率。",
-    aboutTitle: "关于 ICP 价值追踪器",
+    aboutTitle: "关于 ICP Pulse",
     donationAddress: "捐款地址",
     aboutDescription: "通过捐赠 ICP 来支持此应用的运营。",
     adminPanel: "管理面板",
@@ -559,7 +559,7 @@ export const translations: Record<LangCode, Record<TranslationKey, string>> = {
     connectWallet: "连接钱包",
   },
   ja: {
-    appTitle: "ICP バリュートラッカー",
+    appTitle: "ICP Pulse",
     valueTracker: "バリュートラッカー",
     exitStrategy: "出口戦略",
     icpNews: "ICP ニュース",
@@ -637,7 +637,7 @@ export const translations: Record<LangCode, Record<TranslationKey, string>> = {
     notificationInfo: "連絡先は出口戦略タブの価格目標通知に使用されます。",
     currencyInfo: "すべての金額はライブレートでこの通貨に変換されます。",
     refreshInfo: "ライブ価格とデータの自動更新頻度。",
-    aboutTitle: "ICP バリュートラッカーについて",
+    aboutTitle: "ICP Pulseについて",
     donationAddress: "寄付アドレス",
     aboutDescription: "ICP を寄付してこのアプリの運営をサポートしてください。",
     adminPanel: "管理パネル",
@@ -650,7 +650,7 @@ export const translations: Record<LangCode, Record<TranslationKey, string>> = {
     connectWallet: "ウォレットを接続",
   },
   pt: {
-    appTitle: "Rastreador ICP",
+    appTitle: "ICP Pulse",
     valueTracker: "Rastreador de Valor",
     exitStrategy: "Estratégia de Saída",
     icpNews: "Notícias ICP",
@@ -730,7 +730,7 @@ export const translations: Record<LangCode, Record<TranslationKey, string>> = {
       "Todos os valores são convertidos para esta moeda com taxas ao vivo.",
     refreshInfo:
       "Com que frequência os preços e dados são atualizados automaticamente.",
-    aboutTitle: "Sobre o Rastreador ICP",
+    aboutTitle: "Sobre o ICP Pulse",
     donationAddress: "Endereço de doação",
     aboutDescription: "Apoie este app doando ICP para mantê-lo ativo.",
     adminPanel: "Painel de administração",
