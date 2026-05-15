@@ -112,7 +112,7 @@ export function InvestmentTracker({
         value={inputValue}
         onChange={handleInputChange}
         className="input-field pl-7 pr-8 w-full"
-        aria-label={`Amount invested in ${currency}`}
+        aria-label="Invested Amount"
         data-ocid="investment_tracker.input"
       />
       {isPending && (

@@ -991,6 +991,9 @@ video {
 .h-\[1\.15rem\] {
   height: 1.15rem;
 }
+.h-\[18px\] {
+  height: 18px;
+}
 .h-\[calc\(100\%-1px\)\] {
   height: calc(100% - 1px);
 }
@@ -2193,6 +2196,9 @@ video {
 }
 .text-destructive-foreground {
   color: oklch(var(--destructive-foreground));
+}
+.text-destructive\/80 {
+  color: oklch(var(--destructive) / 0.8);
 }
 .text-emerald-400 {
   --tw-text-opacity: 1;

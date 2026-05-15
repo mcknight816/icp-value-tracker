@@ -1373,27 +1373,49 @@ export function useToggleAnnouncementPublished() {
 }
 
 export function useAdminICPBalance() {
-  const { actor, isReady } = useBackendActor();
-  const { identity } = useInternetIdentity();
-  const principal = identity?.getPrincipal().toString() ?? null;
-  return useQuery<string>({
-    queryKey: ["adminICPBalance", principal],
+  const WALLET_ADDRESS =
+    "b089c3ed099d1c3501c06fd6855c2152fb542b01e858872ac23269bb12c6f2d1";
+  const LEDGER_URL = `https://ledger-api.internetcomputer.org/accounts/${WALLET_ADDRESS}`;
+
+  return useQuery<string | null>({
+    queryKey: ["adminICPBalance"],
     queryFn: async () => {
-      if (!actor) return "0.0000";
       try {
-        const a = actor as unknown as Record<string, unknown>;
-        if (typeof a.getAdminICPBalance !== "function") return "0.0000";
-        const result = await (a.getAdminICPBalance as () => Promise<string>)();
-        return (result ?? "0.0000").trim();
-      } catch (e) {
-        console.error("[QUERY ERROR] useAdminICPBalance", e);
-        return "0.0000";
+        console.log("[ADMIN BALANCE] fetching from", LEDGER_URL);
+        const res = await fetch(LEDGER_URL, {
+          signal: AbortSignal.timeout(10_000),
+        });
+        if (!res.ok) {
+          console.warn("[ADMIN BALANCE] HTTP error", {
+            url: LEDGER_URL,
+            status: res.status,
+          });
+          return null;
+        }
+        const json = (await res.json()) as { balance?: number | string };
+        console.log("[ADMIN BALANCE] raw response", json);
+        const e8s = Number(json.balance ?? 0);
+        if (Number.isNaN(e8s) || e8s < 0) {
+          console.warn("[ADMIN BALANCE] invalid e8s value", {
+            raw: json.balance,
+          });
+          return null;
+        }
+        // Integer arithmetic only — avoid float formatting artefacts
+        const whole = Math.floor(e8s / 100_000_000);
+        const frac = e8s % 100_000_000;
+        const frac4 = Math.floor(frac / 10_000);
+        const formatted = `${whole}.${frac4.toString().padStart(4, "0")}`;
+        console.log("[ADMIN BALANCE] parsed", { e8s, formatted });
+        return formatted;
+      } catch (err) {
+        console.error("[ADMIN BALANCE] fetch failed", err);
+        return null;
       }
     },
-    enabled: isReady && !!actor,
     staleTime: 60_000,
     retry: 1,
-    placeholderData: (prev) => prev ?? "0.0000",
+    retryDelay: 3_000,
   });
 }
 

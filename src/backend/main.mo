@@ -66,6 +66,7 @@ actor {
   let newsCacheDfinity  = { var items : [Types.NewsItem] = []; var fetchedAt : Int = 0 };
   let newsCacheCT       = { var items : [Types.NewsItem] = []; var fetchedAt : Int = 0 };
   let newsCacheDecrypt  = { var items : [Types.NewsItem] = []; var fetchedAt : Int = 0 };
+  let newsCacheCoinDesk = { var items : [Types.NewsItem] = []; var fetchedAt : Int = 0 };
 
   /// ICP donation address for keeping this service running.
   let donationAddressStore = { var value : Text = "b089c3ed099d1c3501c06fd6855c2152fb542b01e858872ac23269bb12c6f2d1" };
@@ -82,42 +83,31 @@ actor {
   public shared ({ caller }) func getAdminICPBalance() : async Text {
     if (not isOwner(caller)) { return "Unauthorized" };
     let walletAddr = "b089c3ed099d1c3501c06fd6855c2152fb542b01e858872ac23269bb12c6f2d1";
-    let primaryUrl  = "https://ledger-api.internetcomputer.org/accounts/" # walletAddr # "/balance";
-    let fallbackUrl = "https://icrc1-api.internetcomputer.org/accounts/" # walletAddr # "/balance";
+    let primaryUrl  = "https://icp-api.io/v1/ledger/account/" # walletAddr # "/balance";
+    let fallbackUrl = "https://ledger.ic-api.com/account/" # walletAddr # "/balance";
 
     // Try primary endpoint first
+    Debug.print("[BALANCE] fetching from primary: " # primaryUrl);
     let primaryBody : ?Text = try {
       let b = await _OutCall.httpGetRequest(primaryUrl, [], transformAdminBalance);
-      Debug.print("[admin] primary balance response: " # b);
-      ?b;
+      Debug.print("[BALANCE] primary raw body: " # b);
+      if (b.size() == 0 or b == "{}" or b == "null") null else ?b;
     } catch (e) {
-      Debug.print("[admin] primary balance fetch failed: " # e.message());
+      Debug.print("[BALANCE] primary fetch failed: " # e.message());
       null;
     };
 
     let body : Text = switch (primaryBody) {
-      case (?b) {
-        // If the response looks empty or invalid, fall through to fallback
-        if (b.size() == 0 or b == "{}" or b == "null") {
-          Debug.print("[admin] primary response empty/invalid, trying fallback");
-          try {
-            let fb = await _OutCall.httpGetRequest(fallbackUrl, [], transformAdminBalance);
-            Debug.print("[admin] fallback balance response: " # fb);
-            fb;
-          } catch (e2) {
-            Debug.print("[admin] fallback balance fetch also failed: " # e2.message());
-            return "0.0000";
-          };
-        } else { b };
-      };
+      case (?b) b;
       case null {
-        // Primary failed outright — try fallback
+        // Primary failed or empty — try fallback
+        Debug.print("[BALANCE] trying fallback: " # fallbackUrl);
         try {
           let fb = await _OutCall.httpGetRequest(fallbackUrl, [], transformAdminBalance);
-          Debug.print("[admin] fallback balance response: " # fb);
+          Debug.print("[BALANCE] fallback raw body: " # fb);
           fb;
         } catch (e2) {
-          Debug.print("[admin] fallback balance fetch also failed: " # e2.message());
+          Debug.print("[BALANCE] fallback also failed: " # e2.message());
           return "0.0000";
         };
       };
@@ -126,22 +116,31 @@ actor {
     let e8sOpt = parseBalanceE8s(body);
     switch (e8sOpt) {
       case (?e8s) {
-        Debug.print("[admin] parsed e8s: " # e8s.toText());
-        let icpWhole = e8s / 100_000_000;
-        let icpFrac  = (e8s % 100_000_000) / 10_000; // 4 decimal places
-        let fracStr  = if (icpFrac < 10) "000" # icpFrac.toText()
-                       else if (icpFrac < 100) "00" # icpFrac.toText()
-                       else if (icpFrac < 1000) "0" # icpFrac.toText()
-                       else icpFrac.toText();
-        let result = icpWhole.toText() # "." # fracStr;
-        Debug.print("[admin] ICP balance: " # result);
+        Debug.print("[BALANCE] parsed e8s: " # e8s.toText());
+        let result = formatE8sToICP(e8s);
+        Debug.print("[BALANCE] result ICP: " # result);
         result;
       };
       case null {
-        Debug.print("[admin] Could not parse balance from: " # body);
+        Debug.print("[BALANCE] could not parse balance from body: " # body);
         "0.0000";
       };
     };
+  };
+
+  /// Converts a Nat e8s value to an ICP Text string with 4 decimal places.
+  /// Uses integer arithmetic only — avoids Float/debug_show which add '+' prefix.
+  /// Example: 799999000 → "7.9999", 0 → "0.0000", 1000000000 → "10.0000"
+  func formatE8sToICP(e8s : Nat) : Text {
+    let whole = e8s / 100_000_000;
+    let frac8 = e8s % 100_000_000; // 8-digit fractional in e8s units
+    // Take first 4 decimal digits by dividing out last 4 e8s digits
+    let frac4 = frac8 / 10_000;
+    let fracStr = if (frac4 < 10) "000" # frac4.toText()
+                  else if (frac4 < 100) "00" # frac4.toText()
+                  else if (frac4 < 1000) "0" # frac4.toText()
+                  else frac4.toText();
+    whole.toText() # "." # fracStr;
   };
 
   /// Extracts a Nat balance (in e8s) from a JSON body string.
@@ -255,6 +254,9 @@ actor {
   /// Returns recent ICP news items. Each feed is fetched and cached independently
   /// with a 5-minute TTL. All three feeds are fetched IN PARALLEL so one slow
   /// feed cannot block the others. Stale cached items are served when a feed fails.
+  /// Returns recent ICP news items. Each feed is fetched and cached independently
+  /// with a 5-minute TTL. All four feeds are fetched IN PARALLEL so one slow
+  /// feed cannot block the others. Stale cached items are served when a feed fails.
   public func getICPNews() : async [Types.NewsItem] {
     let now = Time.now();
     let ttl : Int = 300_000_000_000; // 5 minutes in nanoseconds
@@ -263,19 +265,21 @@ actor {
     let needDfinity  = now - newsCacheDfinity.fetchedAt  >= ttl or newsCacheDfinity.items.size()  == 0;
     let needCT       = now - newsCacheCT.fetchedAt       >= ttl or newsCacheCT.items.size()       == 0;
     let needDecrypt  = now - newsCacheDecrypt.fetchedAt  >= ttl or newsCacheDecrypt.items.size()  == 0;
+    let needCoinDesk = now - newsCacheCoinDesk.fetchedAt >= ttl or newsCacheCoinDesk.items.size() == 0;
 
-    Debug.print("[getICPNews] cache state -- needDfinity:" # debug_show(needDfinity) # " needCT:" # debug_show(needCT) # " needDecrypt:" # debug_show(needDecrypt)); // bools are fine with debug_show
+    Debug.print("[getICPNews] cache state -- needDfinity:" # debug_show(needDfinity) # " needCT:" # debug_show(needCT) # " needDecrypt:" # debug_show(needDecrypt) # " needCoinDesk:" # debug_show(needCoinDesk));
 
     // Fire all stale fetches concurrently -- store futures BEFORE any await.
     let dfinityFuture  = if (needDfinity)  ?fetchDfinityBlogItems()  else null;
     let ctFuture       = if (needCT)       ?fetchCoinTelegraphItems() else null;
     let decryptFuture  = if (needDecrypt)  ?fetchDecryptItems()       else null;
+    let coinDeskFuture = if (needCoinDesk) ?fetchCoinDeskItems()      else null;
 
     // Await each future that was started, update cache on success.
     let dfinityItems : [Types.NewsItem] = switch (dfinityFuture) {
       case (?f) {
         let fresh = await f;
-        Debug.print("[getICPNews] DFINITY Forum returned: " # fresh.size().toText());
+        Debug.print("[getICPNews] DFINITY Medium returned: " # fresh.size().toText());
         if (fresh.size() > 0) {
           newsCacheDfinity.items     := fresh;
           newsCacheDfinity.fetchedAt := now;
@@ -288,7 +292,7 @@ actor {
     let ctItems : [Types.NewsItem] = switch (ctFuture) {
       case (?f) {
         let fresh = await f;
-        Debug.print("[getICPNews] CoinGecko News returned: " # fresh.size().toText());
+        Debug.print("[getICPNews] CoinTelegraph returned: " # fresh.size().toText());
         if (fresh.size() > 0) {
           newsCacheCT.items     := fresh;
           newsCacheCT.fetchedAt := now;
@@ -301,7 +305,7 @@ actor {
     let decryptItems : [Types.NewsItem] = switch (decryptFuture) {
       case (?f) {
         let fresh = await f;
-        Debug.print("[getICPNews] DFINITY Community returned: " # fresh.size().toText());
+        Debug.print("[getICPNews] Decrypt returned: " # fresh.size().toText());
         if (fresh.size() > 0) {
           newsCacheDecrypt.items     := fresh;
           newsCacheDecrypt.fetchedAt := now;
@@ -311,9 +315,22 @@ actor {
       case null newsCacheDecrypt.items;
     };
 
-    Debug.print("[getICPNews] final sizes -- DFINITY:" # dfinityItems.size().toText() # " CoinGecko:" # ctItems.size().toText() # " Community:" # decryptItems.size().toText());
+    let coinDeskItems : [Types.NewsItem] = switch (coinDeskFuture) {
+      case (?f) {
+        let fresh = await f;
+        Debug.print("[getICPNews] CoinDesk returned: " # fresh.size().toText());
+        if (fresh.size() > 0) {
+          newsCacheCoinDesk.items     := fresh;
+          newsCacheCoinDesk.fetchedAt := now;
+        };
+        if (fresh.size() > 0) fresh else newsCacheCoinDesk.items;
+      };
+      case null newsCacheCoinDesk.items;
+    };
 
-    let allItems : [Types.NewsItem] = dfinityItems.concat(ctItems).concat(decryptItems);
+    Debug.print("[getICPNews] final sizes -- DFINITY:" # dfinityItems.size().toText() # " CT:" # ctItems.size().toText() # " Decrypt:" # decryptItems.size().toText() # " CoinDesk:" # coinDeskItems.size().toText());
+
+    let allItems : [Types.NewsItem] = dfinityItems.concat(ctItems).concat(decryptItems).concat(coinDeskItems);
 
     // If all live feeds returned empty, return hardcoded fallback items so the feed is never blank.
     if (allItems.size() == 0) {

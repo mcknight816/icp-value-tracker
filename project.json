@@ -1,24 +1,29 @@
 {
-  "overview": "ICP Value Tracker is a personal portfolio tool for long-term ICP investors. Track your holdings, live price with 24h high/low, fear & greed + social trending, exit strategy planning, ICP news feed, and execution history — all tied to your Internet Identity login.",
+  "overview": "ICP Nexus is a comprehensive Internet Computer portfolio management and community platform. Track ICP holdings with live prices, plan exit strategies, join community chat, and stay informed with the latest ICP news — all secured with Internet Identity.",
   "features": [
-    "Live ICP price with 24h High/Low, source label, and 60-second auto-refresh",
-    "Investment Tracker split into 3 full-width card sections",
-    "Social Trending score card alongside Fear & Greed gauge",
-    "ICP News feed tab with live articles from crypto news APIs",
-    "Exit Strategy planner with price targets, executed button, and notification alerts",
-    "Historical Data tab with market metrics and execution history",
-    "Dark/light mode toggle and customizable refresh interval in Settings",
-    "Per-user data stored via Internet Identity login"
+    "Live ICP price tracking with multi-source fallback",
+    "Portfolio value tracker with auto-save",
+    "Exit strategy planner with multiple price targets",
+    "Community chat with reactions, image uploads, and YouTube previews",
+    "ICP news feed from aggregated RSS sources",
+    "Multi-language support (7 languages)",
+    "Admin panel with live wallet balance",
+    "Internet Identity authentication"
   ],
   "category": "finance",
   "tags": [
-    "icp",
-    "crypto",
     "portfolio",
-    "tracker",
-    "investment",
+    "crypto",
+    "icp",
+    "internet-computer",
+    "trading",
+    "blockchain",
+    "dashboard",
+    "exit-strategy",
     "defi",
-    "internet-computer"
+    "price-tracker",
+    "community",
+    "news"
   ],
-  "last_updated": "2026-05-13T04:08:52.038Z"
+  "last_updated": "2026-05-15T07:39:34.532Z"
 }

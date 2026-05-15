@@ -156,6 +156,7 @@ export interface _SERVICE {
   'deletePortfolioRecord' : ActorMethod<[], undefined>,
   'deleteUserSettings' : ActorMethod<[], undefined>,
   'fetchAndStoreMarketData' : ActorMethod<[], undefined>,
+  'fetchCoinDeskItems' : ActorMethod<[], Array<NewsItem>>,
   'fetchCoinTelegraphItems' : ActorMethod<[], Array<NewsItem>>,
   'fetchDecryptItems' : ActorMethod<[], Array<NewsItem>>,
   'fetchDfinityBlogItems' : ActorMethod<[], Array<NewsItem>>,
@@ -188,6 +189,9 @@ export interface _SERVICE {
    * / Returns recent ICP news items. Each feed is fetched and cached independently
    * / with a 5-minute TTL. All three feeds are fetched IN PARALLEL so one slow
    * / feed cannot block the others. Stale cached items are served when a feed fails.
+   * / Returns recent ICP news items. Each feed is fetched and cached independently
+   * / with a 5-minute TTL. All four feeds are fetched IN PARALLEL so one slow
+   * / feed cannot block the others. Stale cached items are served when a feed fails.
    */
   'getICPNews' : ActorMethod<[], Array<NewsItem>>,
   'getICPNewsRaw' : ActorMethod<[], Array<NewsItem>>,
@@ -199,6 +203,9 @@ export interface _SERVICE {
   'getICPPrice' : ActorMethod<[], PriceResponse>,
   'getICPPriceRaw' : ActorMethod<[], PriceResponse>,
   'getMarketChart' : ActorMethod<[bigint], Array<PriceVolumePoint>>,
+  /**
+   * / ICP donation address for keeping this service running.
+   */
   'getMarketHistory' : ActorMethod<[], Array<MarketDataPoint>>,
   'getPortfolioRecord' : ActorMethod<[], PortfolioRecord>,
   'getPublishedAnnouncements' : ActorMethod<[], Array<Announcement>>,
@@ -257,6 +264,10 @@ export interface _SERVICE {
     TransformationOutput
   >,
   'transformBinance24h' : ActorMethod<
+    [TransformationInput],
+    TransformationOutput
+  >,
+  'transformCoinDeskRss' : ActorMethod<
     [TransformationInput],
     TransformationOutput
   >,

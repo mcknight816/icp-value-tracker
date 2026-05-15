@@ -134,6 +134,8 @@ actor {
     };
   stable newsCacheCT :
     {var fetchedAt : Int; var items : [NewsItem__1016571300]};
+  stable newsCacheCoinDesk :
+    {var fetchedAt : Int; var items : [NewsItem__1016571300]};
   stable newsCacheDecrypt :
     {var fetchedAt : Int; var items : [NewsItem__1016571300]};
   stable newsCacheDfinity :

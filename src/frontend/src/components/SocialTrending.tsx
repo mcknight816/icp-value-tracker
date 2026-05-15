@@ -205,7 +205,7 @@ export function SocialTrendingCard({
 
       {/* Footer */}
       <div className="flex items-center justify-between text-[10px] text-muted-foreground/60 mt-auto pt-1 border-t border-border/40">
-        <span>Reddit · Twitter · GitHub</span>
+        <span>Reddit · X · GitHub</span>
         <div className="flex items-center gap-1">
           {data?.isStale && (
             <span className="text-amber-500/80 font-medium uppercase tracking-wide">

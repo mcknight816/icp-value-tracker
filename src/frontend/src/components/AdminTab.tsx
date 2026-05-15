@@ -28,6 +28,7 @@ import {
   useToggleAnnouncementPublished,
   useUpdateAnnouncement,
 } from "@/hooks/useQueries";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Edit2,
   ExternalLink,
@@ -40,7 +41,7 @@ import {
   Trash2,
   Wallet,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 type FormState = {
@@ -269,21 +270,55 @@ function AnnouncementRow({
   );
 }
 
+const WALLET_ADDRESS =
+  "b089c3ed099d1c3501c06fd6855c2152fb542b01e858872ac23269bb12c6f2d1";
+
 function formatICP(raw: string): string {
+  // raw is already formatted as "7.9999" from integer arithmetic
   const num = Number.parseFloat(raw);
   if (Number.isNaN(num)) return "0.0000 ICP";
-  const parts = num.toFixed(4).split(".");
-  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  return `${parts[0]}.${parts[1]} ICP`;
+  const [whole, dec = "0000"] = raw.split(".");
+  const paddedDec = dec.padEnd(4, "0").slice(0, 4);
+  const formattedWhole = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return `${formattedWhole}.${paddedDec} ICP`;
 }
 
 function ICPWalletCard() {
+  useEffect(() => {
+    console.log("[ADMIN TAB MOUNT] ICPWalletCard mounted");
+  }, []);
+
+  const queryClient = useQueryClient();
   const {
     data: balance,
     isLoading,
     isFetching,
+    isError,
     refetch,
   } = useAdminICPBalance();
+
+  const handleRefresh = () => {
+    console.log("[ADMIN BALANCE] manual refresh triggered");
+    queryClient.invalidateQueries({ queryKey: ["adminICPBalance"] });
+    refetch();
+  };
+
+  const loading = isLoading || isFetching;
+  // balance is a string like "7.9999" from direct browser ledger fetch
+  const displayRaw = balance ?? null;
+  const parsedBalance =
+    displayRaw != null ? Number.parseFloat(displayRaw) : Number.NaN;
+  const hasValidBalance =
+    displayRaw != null && !Number.isNaN(parsedBalance) && parsedBalance > 0;
+
+  console.log("[ADMIN BALANCE] render", {
+    balance,
+    isLoading,
+    isFetching,
+    isError,
+    displayRaw,
+    hasValidBalance,
+  });
 
   return (
     <div
@@ -300,21 +335,21 @@ function ICPWalletCard() {
               ICP Wallet Balance
             </h3>
             <p className="text-[11px] text-muted-foreground/70 font-mono truncate max-w-[260px]">
-              b089c3ed...c6f2d1
+              {WALLET_ADDRESS.slice(0, 8)}...{WALLET_ADDRESS.slice(-6)}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => refetch()}
-            disabled={isFetching}
+            onClick={handleRefresh}
+            disabled={loading}
             title="Refresh balance"
             className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-smooth disabled:opacity-50"
             data-ocid="admin.wallet_refresh_button"
           >
             <RefreshCw
-              className={`w-3.5 h-3.5 ${isFetching ? "animate-spin" : ""}`}
+              className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`}
             />
           </button>
           <a
@@ -329,23 +364,49 @@ function ICPWalletCard() {
           </a>
         </div>
       </div>
+
       <div className="flex items-baseline gap-2">
-        {isLoading ? (
-          <div className="h-8 w-40 bg-muted/60 rounded animate-pulse" />
+        {loading ? (
+          <div
+            className="h-8 w-40 bg-muted/60 rounded animate-pulse"
+            data-ocid="admin.wallet_balance.loading_state"
+          />
+        ) : isError || !hasValidBalance ? (
+          <span
+            className="text-2xl font-display font-bold text-muted-foreground tracking-tight"
+            data-ocid="admin.wallet_balance"
+          >
+            —
+          </span>
         ) : (
           <span
             className="text-2xl font-display font-bold text-foreground tracking-tight"
             data-ocid="admin.wallet_balance"
           >
-            {formatICP(balance ?? "0.0000")}
+            {formatICP(displayRaw as string)}
           </span>
         )}
-        {!isLoading && (
+        {!loading && hasValidBalance && (
           <span className="text-xs text-muted-foreground">
             at current wallet address
           </span>
         )}
       </div>
+
+      {!loading && (isError || !hasValidBalance) && (
+        <p
+          className="text-xs text-destructive/80 mt-1"
+          data-ocid="admin.wallet_balance.error_state"
+        >
+          Unable to load balance — tap Refresh to try again
+        </p>
+      )}
+
+      {!loading && hasValidBalance && (
+        <p className="text-[10px] text-muted-foreground/50">
+          Source: ICP Ledger (icp-api.io)
+        </p>
+      )}
     </div>
   );
 }

@@ -163,6 +163,7 @@ export interface backendInterface {
     deletePortfolioRecord(): Promise<void>;
     deleteUserSettings(): Promise<void>;
     fetchAndStoreMarketData(): Promise<void>;
+    fetchCoinDeskItems(): Promise<Array<NewsItem>>;
     fetchCoinTelegraphItems(): Promise<Array<NewsItem>>;
     fetchDecryptItems(): Promise<Array<NewsItem>>;
     fetchDfinityBlogItems(): Promise<Array<NewsItem>>;
@@ -195,6 +196,9 @@ export interface backendInterface {
      * / Returns recent ICP news items. Each feed is fetched and cached independently
      * / with a 5-minute TTL. All three feeds are fetched IN PARALLEL so one slow
      * / feed cannot block the others. Stale cached items are served when a feed fails.
+     * / Returns recent ICP news items. Each feed is fetched and cached independently
+     * / with a 5-minute TTL. All four feeds are fetched IN PARALLEL so one slow
+     * / feed cannot block the others. Stale cached items are served when a feed fails.
      */
     getICPNews(): Promise<Array<NewsItem>>;
     getICPNewsRaw(): Promise<Array<NewsItem>>;
@@ -206,6 +210,9 @@ export interface backendInterface {
     getICPPrice(): Promise<PriceResponse>;
     getICPPriceRaw(): Promise<PriceResponse>;
     getMarketChart(days: bigint): Promise<Array<PriceVolumePoint>>;
+    /**
+     * / ICP donation address for keeping this service running.
+     */
     getMarketHistory(): Promise<Array<MarketDataPoint>>;
     getPortfolioRecord(): Promise<PortfolioRecord>;
     getPublishedAnnouncements(): Promise<Array<Announcement>>;
@@ -259,6 +266,7 @@ export interface backendInterface {
      */
     transformAdminBalance(input: TransformationInput): Promise<TransformationOutput>;
     transformBinance24h(input: TransformationInput): Promise<TransformationOutput>;
+    transformCoinDeskRss(input: TransformationInput): Promise<TransformationOutput>;
     transformCoinTelegraphRss(input: TransformationInput): Promise<TransformationOutput>;
     transformDecryptRss(input: TransformationInput): Promise<TransformationOutput>;
     transformDfinityBlog(input: TransformationInput): Promise<TransformationOutput>;

@@ -161,6 +161,7 @@ export const idlService = IDL.Service({
   'deletePortfolioRecord' : IDL.Func([], [], []),
   'deleteUserSettings' : IDL.Func([], [], []),
   'fetchAndStoreMarketData' : IDL.Func([], [], []),
+  'fetchCoinDeskItems' : IDL.Func([], [IDL.Vec(NewsItem)], []),
   'fetchCoinTelegraphItems' : IDL.Func([], [IDL.Vec(NewsItem)], []),
   'fetchDecryptItems' : IDL.Func([], [IDL.Vec(NewsItem)], []),
   'fetchDfinityBlogItems' : IDL.Func([], [IDL.Vec(NewsItem)], []),
@@ -242,6 +243,11 @@ export const idlService = IDL.Service({
       ['query'],
     ),
   'transformBinance24h' : IDL.Func(
+      [TransformationInput],
+      [TransformationOutput],
+      ['query'],
+    ),
+  'transformCoinDeskRss' : IDL.Func(
       [TransformationInput],
       [TransformationOutput],
       ['query'],
@@ -453,6 +459,7 @@ export const idlFactory = ({ IDL }) => {
     'deletePortfolioRecord' : IDL.Func([], [], []),
     'deleteUserSettings' : IDL.Func([], [], []),
     'fetchAndStoreMarketData' : IDL.Func([], [], []),
+    'fetchCoinDeskItems' : IDL.Func([], [IDL.Vec(NewsItem)], []),
     'fetchCoinTelegraphItems' : IDL.Func([], [IDL.Vec(NewsItem)], []),
     'fetchDecryptItems' : IDL.Func([], [IDL.Vec(NewsItem)], []),
     'fetchDfinityBlogItems' : IDL.Func([], [IDL.Vec(NewsItem)], []),
@@ -534,6 +541,11 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'transformBinance24h' : IDL.Func(
+        [TransformationInput],
+        [TransformationOutput],
+        ['query'],
+      ),
+    'transformCoinDeskRss' : IDL.Func(
         [TransformationInput],
         [TransformationOutput],
         ['query'],

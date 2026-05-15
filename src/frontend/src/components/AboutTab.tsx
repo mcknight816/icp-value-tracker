@@ -83,7 +83,7 @@ export function AboutTab() {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="font-display font-bold text-2xl text-foreground tracking-tight">
-                ICP Pulse
+                ICP Nexus
               </h1>
               <span className="inline-flex items-center rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white shadow-sm">
                 beta
@@ -103,7 +103,7 @@ export function AboutTab() {
             <span className="text-foreground font-medium">
               Internet Computer
             </span>{" "}
-            blockchain (developed by DFINITY Foundation), ICP Pulse stores your
+            blockchain (developed by DFINITY Foundation), ICP Nexus stores your
             data securely on-chain — no central servers, no passwords. Prices
             refresh automatically from multiple sources with graceful fallback
             to cached values, and your personal settings are always tied to your
@@ -167,7 +167,7 @@ export function AboutTab() {
           </div>
           <div>
             <h2 className="font-display font-semibold text-base text-foreground">
-              Support ICP Pulse
+              Support ICP Nexus
             </h2>
             <p className="text-xs text-muted-foreground">
               Help keep the app running and growing
@@ -176,7 +176,7 @@ export function AboutTab() {
         </div>
 
         <p className="text-sm text-muted-foreground leading-relaxed">
-          ICP Pulse is free to use and runs entirely on the Internet Computer.
+          ICP Nexus is free to use and runs entirely on the Internet Computer.
           If it's been useful to your ICP journey, consider sending a small ICP
           donation to help cover on-chain compute cycles and future development.
           Every contribution is genuinely appreciated!

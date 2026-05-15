@@ -27556,6 +27556,7 @@ Service({
   "deletePortfolioRecord": Func([], [], []),
   "deleteUserSettings": Func([], [], []),
   "fetchAndStoreMarketData": Func([], [], []),
+  "fetchCoinDeskItems": Func([], [Vec(NewsItem)], []),
   "fetchCoinTelegraphItems": Func([], [Vec(NewsItem)], []),
   "fetchDecryptItems": Func([], [Vec(NewsItem)], []),
   "fetchDfinityBlogItems": Func([], [Vec(NewsItem)], []),
@@ -27637,6 +27638,11 @@ Service({
     ["query"]
   ),
   "transformBinance24h": Func(
+    [TransformationInput],
+    [TransformationOutput],
+    ["query"]
+  ),
+  "transformCoinDeskRss": Func(
     [TransformationInput],
     [TransformationOutput],
     ["query"]
@@ -27844,6 +27850,7 @@ const idlFactory = ({ IDL: IDL2 }) => {
     "deletePortfolioRecord": IDL2.Func([], [], []),
     "deleteUserSettings": IDL2.Func([], [], []),
     "fetchAndStoreMarketData": IDL2.Func([], [], []),
+    "fetchCoinDeskItems": IDL2.Func([], [IDL2.Vec(NewsItem2)], []),
     "fetchCoinTelegraphItems": IDL2.Func([], [IDL2.Vec(NewsItem2)], []),
     "fetchDecryptItems": IDL2.Func([], [IDL2.Vec(NewsItem2)], []),
     "fetchDfinityBlogItems": IDL2.Func([], [IDL2.Vec(NewsItem2)], []),
@@ -27925,6 +27932,11 @@ const idlFactory = ({ IDL: IDL2 }) => {
       ["query"]
     ),
     "transformBinance24h": IDL2.Func(
+      [TransformationInput2],
+      [TransformationOutput2],
+      ["query"]
+    ),
+    "transformCoinDeskRss": IDL2.Func(
       [TransformationInput2],
       [TransformationOutput2],
       ["query"]
@@ -28133,6 +28145,20 @@ class Backend {
       }
     } else {
       const result = await this.actor.fetchAndStoreMarketData();
+      return result;
+    }
+  }
+  async fetchCoinDeskItems() {
+    if (this.processError) {
+      try {
+        const result = await this.actor.fetchCoinDeskItems();
+        return result;
+      } catch (e3) {
+        this.processError(e3);
+        throw new Error("unreachable");
+      }
+    } else {
+      const result = await this.actor.fetchCoinDeskItems();
       return result;
     }
   }
@@ -28598,6 +28624,20 @@ class Backend {
       return result;
     }
   }
+  async transformCoinDeskRss(arg0) {
+    if (this.processError) {
+      try {
+        const result = await this.actor.transformCoinDeskRss(arg0);
+        return result;
+      } catch (e3) {
+        this.processError(e3);
+        throw new Error("unreachable");
+      }
+    } else {
+      const result = await this.actor.transformCoinDeskRss(arg0);
+      return result;
+    }
+  }
   async transformCoinTelegraphRss(arg0) {
     if (this.processError) {
       try {
@@ -28975,7 +29015,7 @@ function createActor(canisterId, _uploadFile, _downloadFile, options = {}) {
 }
 const translations = {
   en: {
-    appTitle: "ICP Pulse",
+    appTitle: "ICP Nexus",
     valueTracker: "Value Tracker",
     exitStrategy: "Exit Strategy",
     icpNews: "ICP News",
@@ -29052,7 +29092,7 @@ const translations = {
     notificationInfo: "Your contact details are used for price-target notifications on the Exit Strategy tab.",
     currencyInfo: "All monetary values convert to this currency using live rates.",
     refreshInfo: "How often live prices and data auto-refresh.",
-    aboutTitle: "About ICP Pulse",
+    aboutTitle: "About ICP Nexus",
     donationAddress: "Donation Address",
     aboutDescription: "Support this app by donating ICP to keep it running.",
     adminPanel: "Admin Panel",
@@ -29065,7 +29105,7 @@ const translations = {
     connectWallet: "Connect Wallet"
   },
   es: {
-    appTitle: "ICP Pulse",
+    appTitle: "ICP Nexus",
     valueTracker: "Rastreador de Valor",
     exitStrategy: "Estrategia de Salida",
     icpNews: "Noticias ICP",
@@ -29142,7 +29182,7 @@ const translations = {
     notificationInfo: "Tus datos se usan para notificaciones de objetivos de precio.",
     currencyInfo: "Todos los valores se convierten a esta moneda con tasas en vivo.",
     refreshInfo: "Con qué frecuencia se actualizan automáticamente los precios.",
-    aboutTitle: "Acerca de ICP Pulse",
+    aboutTitle: "Acerca de ICP Nexus",
     donationAddress: "Dirección de donación",
     aboutDescription: "Apoya esta app donando ICP para mantenerla activa.",
     adminPanel: "Panel de administrador",
@@ -29155,7 +29195,7 @@ const translations = {
     connectWallet: "Conectar billetera"
   },
   fr: {
-    appTitle: "ICP Pulse",
+    appTitle: "ICP Nexus",
     valueTracker: "Suivi de valeur",
     exitStrategy: "Stratégie de sortie",
     icpNews: "Actualités ICP",
@@ -29232,7 +29272,7 @@ const translations = {
     notificationInfo: "Vos coordonnées sont utilisées pour les notifications de prix.",
     currencyInfo: "Toutes les valeurs sont converties dans cette devise.",
     refreshInfo: "Fréquence de rafraîchissement automatique des données.",
-    aboutTitle: "À propos d'ICP Pulse",
+    aboutTitle: "À propos d'ICP Nexus",
     donationAddress: "Adresse de don",
     aboutDescription: "Soutenez cette app en faisant un don ICP.",
     adminPanel: "Panneau d'administration",
@@ -29245,7 +29285,7 @@ const translations = {
     connectWallet: "Connecter le portefeuille"
   },
   de: {
-    appTitle: "ICP Pulse",
+    appTitle: "ICP Nexus",
     valueTracker: "Wert-Tracker",
     exitStrategy: "Ausstiegsstrategie",
     icpNews: "ICP Nachrichten",
@@ -29322,7 +29362,7 @@ const translations = {
     notificationInfo: "Kontaktdaten werden für Preisziel-Benachrichtigungen genutzt.",
     currencyInfo: "Alle Werte werden mit Live-Kursen in diese Währung umgerechnet.",
     refreshInfo: "Wie oft Preise und Daten automatisch aktualisiert werden.",
-    aboutTitle: "Über ICP Pulse",
+    aboutTitle: "Über ICP Nexus",
     donationAddress: "Spendenadresse",
     aboutDescription: "Unterstütze diese App mit einer ICP-Spende.",
     adminPanel: "Admin-Panel",
@@ -29335,7 +29375,7 @@ const translations = {
     connectWallet: "Wallet verbinden"
   },
   zh: {
-    appTitle: "ICP Pulse",
+    appTitle: "ICP Nexus",
     valueTracker: "价值追踪",
     exitStrategy: "退出策略",
     icpNews: "ICP 新闻",
@@ -29412,7 +29452,7 @@ const translations = {
     notificationInfo: "您的联系方式用于退出策略标签的价格目标通知。",
     currencyInfo: "所有货币价值将使用实时汇率转换为此货币。",
     refreshInfo: "实时价格和数据自动刷新的频率。",
-    aboutTitle: "关于 ICP Pulse",
+    aboutTitle: "关于 ICP Nexus",
     donationAddress: "捐款地址",
     aboutDescription: "通过捐赠 ICP 来支持此应用的运营。",
     adminPanel: "管理面板",
@@ -29425,7 +29465,7 @@ const translations = {
     connectWallet: "连接钱包"
   },
   ja: {
-    appTitle: "ICP Pulse",
+    appTitle: "ICP Nexus",
     valueTracker: "バリュートラッカー",
     exitStrategy: "出口戦略",
     icpNews: "ICP ニュース",
@@ -29502,7 +29542,7 @@ const translations = {
     notificationInfo: "連絡先は出口戦略タブの価格目標通知に使用されます。",
     currencyInfo: "すべての金額はライブレートでこの通貨に変換されます。",
     refreshInfo: "ライブ価格とデータの自動更新頻度。",
-    aboutTitle: "ICP Pulseについて",
+    aboutTitle: "ICP Nexusについて",
     donationAddress: "寄付アドレス",
     aboutDescription: "ICP を寄付してこのアプリの運営をサポートしてください。",
     adminPanel: "管理パネル",
@@ -29515,7 +29555,7 @@ const translations = {
     connectWallet: "ウォレットを接続"
   },
   pt: {
-    appTitle: "ICP Pulse",
+    appTitle: "ICP Nexus",
     valueTracker: "Rastreador de Valor",
     exitStrategy: "Estratégia de Saída",
     icpNews: "Notícias ICP",
@@ -29592,7 +29632,7 @@ const translations = {
     notificationInfo: "Seus dados de contato são usados para notificações de metas de preço.",
     currencyInfo: "Todos os valores são convertidos para esta moeda com taxas ao vivo.",
     refreshInfo: "Com que frequência os preços e dados são atualizados automaticamente.",
-    aboutTitle: "Sobre o ICP Pulse",
+    aboutTitle: "Sobre o ICP Nexus",
     donationAddress: "Endereço de doação",
     aboutDescription: "Apoie este app doando ICP para mantê-lo ativo.",
     adminPanel: "Painel de administração",
@@ -30738,27 +30778,46 @@ function useToggleAnnouncementPublished() {
   });
 }
 function useAdminICPBalance() {
-  const { actor, isReady } = useBackendActor();
-  const { identity: identity3 } = useInternetIdentity();
-  const principal = (identity3 == null ? void 0 : identity3.getPrincipal().toString()) ?? null;
+  const WALLET_ADDRESS2 = "b089c3ed099d1c3501c06fd6855c2152fb542b01e858872ac23269bb12c6f2d1";
+  const LEDGER_URL = `https://ledger-api.internetcomputer.org/accounts/${WALLET_ADDRESS2}`;
   return useQuery({
-    queryKey: ["adminICPBalance", principal],
+    queryKey: ["adminICPBalance"],
     queryFn: async () => {
-      if (!actor) return "0.0000";
       try {
-        const a2 = actor;
-        if (typeof a2.getAdminICPBalance !== "function") return "0.0000";
-        const result = await a2.getAdminICPBalance();
-        return (result ?? "0.0000").trim();
-      } catch (e3) {
-        console.error("[QUERY ERROR] useAdminICPBalance", e3);
-        return "0.0000";
+        console.log("[ADMIN BALANCE] fetching from", LEDGER_URL);
+        const res = await fetch(LEDGER_URL, {
+          signal: AbortSignal.timeout(1e4)
+        });
+        if (!res.ok) {
+          console.warn("[ADMIN BALANCE] HTTP error", {
+            url: LEDGER_URL,
+            status: res.status
+          });
+          return null;
+        }
+        const json = await res.json();
+        console.log("[ADMIN BALANCE] raw response", json);
+        const e8s = Number(json.balance ?? 0);
+        if (Number.isNaN(e8s) || e8s < 0) {
+          console.warn("[ADMIN BALANCE] invalid e8s value", {
+            raw: json.balance
+          });
+          return null;
+        }
+        const whole = Math.floor(e8s / 1e8);
+        const frac = e8s % 1e8;
+        const frac4 = Math.floor(frac / 1e4);
+        const formatted = `${whole}.${frac4.toString().padStart(4, "0")}`;
+        console.log("[ADMIN BALANCE] parsed", { e8s, formatted });
+        return formatted;
+      } catch (err) {
+        console.error("[ADMIN BALANCE] fetch failed", err);
+        return null;
       }
     },
-    enabled: isReady && !!actor,
     staleTime: 6e4,
     retry: 1,
-    placeholderData: (prev) => prev ?? "0.0000"
+    retryDelay: 3e3
   });
 }
 function useSendTestEmail() {
@@ -31566,7 +31625,7 @@ function AboutTab() {
         /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-12 h-12 rounded-xl bg-accent/20 border border-accent/30 flex items-center justify-center shrink-0 text-2xl", children: "⚡" }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex-1 min-w-0", children: [
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 flex-wrap", children: [
-            /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "font-display font-bold text-2xl text-foreground tracking-tight", children: "ICP Pulse" }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "font-display font-bold text-2xl text-foreground tracking-tight", children: "ICP Nexus" }),
             /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "inline-flex items-center rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white shadow-sm", children: "beta" })
           ] }),
           /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-muted-foreground mt-1 leading-relaxed", children: "Your all-in-one Internet Computer portfolio dashboard — live prices, exit strategy planning, community chat, and market intelligence, all secured on-chain via Internet Identity." })
@@ -31577,7 +31636,7 @@ function AboutTab() {
         " ",
         /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-foreground font-medium", children: "Internet Computer" }),
         " ",
-        "blockchain (developed by DFINITY Foundation), ICP Pulse stores your data securely on-chain — no central servers, no passwords. Prices refresh automatically from multiple sources with graceful fallback to cached values, and your personal settings are always tied to your unique Internet Identity."
+        "blockchain (developed by DFINITY Foundation), ICP Nexus stores your data securely on-chain — no central servers, no passwords. Prices refresh automatically from multiple sources with graceful fallback to cached values, and your personal settings are always tied to your unique Internet Identity."
       ] }) })
     ] }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "bg-card border border-border rounded-xl p-6 space-y-5", children: [
@@ -31622,11 +31681,11 @@ function AboutTab() {
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-9 h-9 rounded-lg bg-accent/20 border border-accent/30 flex items-center justify-center shrink-0", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Heart, { className: "w-4.5 h-4.5 text-accent" }) }),
             /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-              /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "font-display font-semibold text-base text-foreground", children: "Support ICP Pulse" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "font-display font-semibold text-base text-foreground", children: "Support ICP Nexus" }),
               /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-xs text-muted-foreground", children: "Help keep the app running and growing" })
             ] })
           ] }),
-          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-muted-foreground leading-relaxed", children: "ICP Pulse is free to use and runs entirely on the Internet Computer. If it's been useful to your ICP journey, consider sending a small ICP donation to help cover on-chain compute cycles and future development. Every contribution is genuinely appreciated!" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-muted-foreground leading-relaxed", children: "ICP Nexus is free to use and runs entirely on the Internet Computer. If it's been useful to your ICP journey, consider sending a small ICP donation to help cover on-chain compute cycles and future development. Every contribution is genuinely appreciated!" }),
           address ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-5", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-2", children: [
               /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground", children: [
@@ -40596,20 +40655,44 @@ function AnnouncementRow({
     }
   );
 }
+const WALLET_ADDRESS = "b089c3ed099d1c3501c06fd6855c2152fb542b01e858872ac23269bb12c6f2d1";
 function formatICP$1(raw) {
   const num = Number.parseFloat(raw);
   if (Number.isNaN(num)) return "0.0000 ICP";
-  const parts = num.toFixed(4).split(".");
-  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  return `${parts[0]}.${parts[1]} ICP`;
+  const [whole, dec = "0000"] = raw.split(".");
+  const paddedDec = dec.padEnd(4, "0").slice(0, 4);
+  const formattedWhole = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return `${formattedWhole}.${paddedDec} ICP`;
 }
 function ICPWalletCard() {
+  reactExports.useEffect(() => {
+    console.log("[ADMIN TAB MOUNT] ICPWalletCard mounted");
+  }, []);
+  const queryClient2 = useQueryClient();
   const {
     data: balance,
     isLoading,
     isFetching,
+    isError,
     refetch
   } = useAdminICPBalance();
+  const handleRefresh = () => {
+    console.log("[ADMIN BALANCE] manual refresh triggered");
+    queryClient2.invalidateQueries({ queryKey: ["adminICPBalance"] });
+    refetch();
+  };
+  const loading = isLoading || isFetching;
+  const displayRaw = balance ?? null;
+  const parsedBalance = displayRaw != null ? Number.parseFloat(displayRaw) : Number.NaN;
+  const hasValidBalance = displayRaw != null && !Number.isNaN(parsedBalance) && parsedBalance > 0;
+  console.log("[ADMIN BALANCE] render", {
+    balance,
+    isLoading,
+    isFetching,
+    isError,
+    displayRaw,
+    hasValidBalance
+  });
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(
     "div",
     {
@@ -40621,7 +40704,11 @@ function ICPWalletCard() {
             /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-7 h-7 rounded-md bg-primary/20 border border-primary/30 flex items-center justify-center", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Wallet, { className: "w-4 h-4 text-primary" }) }),
             /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx("h3", { className: "font-display font-semibold text-foreground tracking-tight text-sm", children: "ICP Wallet Balance" }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[11px] text-muted-foreground/70 font-mono truncate max-w-[260px]", children: "b089c3ed...c6f2d1" })
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-[11px] text-muted-foreground/70 font-mono truncate max-w-[260px]", children: [
+                WALLET_ADDRESS.slice(0, 8),
+                "...",
+                WALLET_ADDRESS.slice(-6)
+              ] })
             ] })
           ] }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2", children: [
@@ -40629,15 +40716,15 @@ function ICPWalletCard() {
               "button",
               {
                 type: "button",
-                onClick: () => refetch(),
-                disabled: isFetching,
+                onClick: handleRefresh,
+                disabled: loading,
                 title: "Refresh balance",
                 className: "p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-smooth disabled:opacity-50",
                 "data-ocid": "admin.wallet_refresh_button",
                 children: /* @__PURE__ */ jsxRuntimeExports.jsx(
                   RefreshCw,
                   {
-                    className: `w-3.5 h-3.5 ${isFetching ? "animate-spin" : ""}`
+                    className: `w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`
                   }
                 )
               }
@@ -40659,16 +40746,38 @@ function ICPWalletCard() {
           ] })
         ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-baseline gap-2", children: [
-          isLoading ? /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "h-8 w-40 bg-muted/60 rounded animate-pulse" }) : /* @__PURE__ */ jsxRuntimeExports.jsx(
+          loading ? /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "div",
+            {
+              className: "h-8 w-40 bg-muted/60 rounded animate-pulse",
+              "data-ocid": "admin.wallet_balance.loading_state"
+            }
+          ) : isError || !hasValidBalance ? /* @__PURE__ */ jsxRuntimeExports.jsx(
+            "span",
+            {
+              className: "text-2xl font-display font-bold text-muted-foreground tracking-tight",
+              "data-ocid": "admin.wallet_balance",
+              children: "—"
+            }
+          ) : /* @__PURE__ */ jsxRuntimeExports.jsx(
             "span",
             {
               className: "text-2xl font-display font-bold text-foreground tracking-tight",
               "data-ocid": "admin.wallet_balance",
-              children: formatICP$1(balance ?? "0.0000")
+              children: formatICP$1(displayRaw)
             }
           ),
-          !isLoading && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs text-muted-foreground", children: "at current wallet address" })
-        ] })
+          !loading && hasValidBalance && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-xs text-muted-foreground", children: "at current wallet address" })
+        ] }),
+        !loading && (isError || !hasValidBalance) && /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "p",
+          {
+            className: "text-xs text-destructive/80 mt-1",
+            "data-ocid": "admin.wallet_balance.error_state",
+            children: "Unable to load balance — tap Refresh to try again"
+          }
+        ),
+        !loading && hasValidBalance && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-[10px] text-muted-foreground/50", children: "Source: ICP Ledger (icp-api.io)" })
       ]
     }
   );
@@ -51370,7 +51479,7 @@ function InvestmentTracker({
         value: inputValue,
         onChange: handleInputChange,
         className: "input-field pl-7 pr-8 w-full",
-        "aria-label": `Amount invested in ${currency}`,
+        "aria-label": "Invested Amount",
         "data-ocid": "investment_tracker.input"
       }
     ),
@@ -51555,7 +51664,7 @@ function LoginScreen() {
               /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex flex-col items-center gap-4", children: [
                 /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-16 h-16 rounded-2xl bg-accent/20 border border-accent/30 flex items-center justify-center shadow-lg", children: /* @__PURE__ */ jsxRuntimeExports.jsx(TrendingUp, { className: "w-8 h-8 text-accent" }) }),
                 /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "font-display text-2xl font-bold text-foreground tracking-tight", children: "ICP Pulse" }),
+                  /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "font-display text-2xl font-bold text-foreground tracking-tight", children: "ICP Nexus" }),
                   /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-muted-foreground mt-1", children: "Track your ICP portfolio with live prices & market data" })
                 ] })
               ] }),
@@ -75272,7 +75381,7 @@ function SocialTrendingCard({
           z2.label
         )) }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center justify-between text-[10px] text-muted-foreground/60 mt-auto pt-1 border-t border-border/40", children: [
-          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "Reddit · Twitter · GitHub" }),
+          /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: "Reddit · X · GitHub" }),
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-1", children: [
             (data == null ? void 0 : data.isStale) && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-amber-500/80 font-medium uppercase tracking-wide", children: "stale" }),
             (data == null ? void 0 : data.fetchedAt) !== void 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { children: formatAge(data.fetchedAt) })
@@ -75422,6 +75531,8 @@ function App() {
   const principalStr = (identity3 == null ? void 0 : identity3.getPrincipal().toString()) ?? null;
   const [activeTab, setActiveTab] = reactExports.useState("tracker");
   const [refreshInterval, setRefreshInterval] = reactExports.useState(getStoredInterval);
+  const [unreadChatCount, setUnreadChatCount] = reactExports.useState(0);
+  const lastSeenChatCountRef = reactExports.useRef(0);
   reactExports.useEffect(() => {
     function onIntervalChange() {
       setRefreshInterval(getStoredInterval());
@@ -75484,6 +75595,13 @@ function App() {
   const hasMountedRef = reactExports.useRef(false);
   const { data: userSettings } = useUserSettings(refreshInterval);
   const { data: isAdmin } = useIsAdmin();
+  const { data: chatMessages } = useChatMessages(20, 0);
+  reactExports.useEffect(() => {
+    const count2 = (chatMessages == null ? void 0 : chatMessages.length) ?? 0;
+    if (activeTab !== "chat" && count2 > lastSeenChatCountRef.current) {
+      setUnreadChatCount(count2 - lastSeenChatCountRef.current);
+    }
+  }, [chatMessages, activeTab]);
   reactExports.useEffect(() => {
     if (userSettings == null ? void 0 : userSettings.theme) {
       if (userSettings.theme === "dark") {
@@ -75617,7 +75735,7 @@ function App() {
           /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "max-w-5xl mx-auto flex items-center justify-between gap-3", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-2.5", children: [
               /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "w-7 h-7 rounded-md bg-accent/20 border border-accent/30 flex items-center justify-center", children: /* @__PURE__ */ jsxRuntimeExports.jsx(TrendingUp, { className: "w-4 h-4 text-accent" }) }),
-              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-display font-semibold text-foreground tracking-tight", children: "ICP Pulse" }),
+              /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-display font-semibold text-foreground tracking-tight", children: "ICP Nexus" }),
               baseCurrency !== "USD" && /* @__PURE__ */ jsxRuntimeExports.jsxs(
                 "span",
                 {
@@ -75801,11 +75919,27 @@ function App() {
             type: "button",
             role: "tab",
             "aria-selected": activeTab === tab.id,
-            onClick: () => setActiveTab(tab.id),
+            onClick: () => {
+              if (tab.id === "chat") {
+                setUnreadChatCount(0);
+                lastSeenChatCountRef.current = (chatMessages == null ? void 0 : chatMessages.length) ?? 0;
+              }
+              setActiveTab(tab.id);
+            },
             className: `relative px-4 py-3.5 text-sm font-medium transition-smooth whitespace-nowrap ${activeTab === tab.id ? "text-accent" : "text-muted-foreground hover:text-foreground"}`,
             "data-ocid": `tabs.${tab.id}.tab`,
             children: [
-              tab.label,
+              /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "flex items-center gap-1.5", children: [
+                tab.label,
+                tab.id === "chat" && unreadChatCount > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx(
+                  "span",
+                  {
+                    className: "inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-orange-500 text-white text-[10px] font-bold leading-none",
+                    "data-ocid": "tabs.chat.unread_badge",
+                    children: unreadChatCount > 99 ? "99+" : unreadChatCount
+                  }
+                )
+              ] }),
               activeTab === tab.id && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "absolute bottom-0 left-0 right-0 h-0.5 bg-accent rounded-t-full" })
             ]
           },

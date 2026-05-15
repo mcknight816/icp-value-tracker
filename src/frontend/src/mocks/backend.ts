@@ -44,7 +44,6 @@ function mockChartPoints(days: bigint) {
 
 export const mockBackend: backendInterface = {
   assignCallerUserRole: async (_user, _role) => {},
-  _initializeAccessControl: async () => {},
   getCallerUserRole: async () => UserRole.user,
   isCallerAdmin: async () => false,
   getICPPrice: async () => ({
@@ -131,6 +130,11 @@ export const mockBackend: backendInterface = {
     body: input.response.body,
     headers: input.response.headers,
   }),
+  transformCoinDeskRss: async (input: import('@/backend').TransformationInput): Promise<import('@/backend').TransformationOutput> => ({
+    status: 200n as bigint,
+    body: input.response.body,
+    headers: input.response.headers,
+  }),
   transformCoinTelegraphRss: async (_input: import('@/backend').TransformationInput) => ({
     status: 200n as bigint,
     body: new Uint8Array(),
@@ -149,6 +153,7 @@ export const mockBackend: backendInterface = {
   fetchDfinityBlogItems: async () => [],
   fetchCoinTelegraphItems: async () => [],
   fetchDecryptItems: async () => [],
+  fetchCoinDeskItems: async () => [],
   // ─── Announcements ────────────────────────────────────────────────────────
   createAnnouncement: async (_title: string, _body: string, _announcementType: import('@/backend').AnnouncementType) => 1n,
   deleteAnnouncement: async (_id: bigint) => true,
@@ -171,4 +176,5 @@ export const mockBackend: backendInterface = {
   toggleChatShill: async (_messageId: bigint, _isShill: boolean) => ({ __kind__: 'ok' as const, ok: { id: _messageId, tab: 'icp', isDeleted: false, content: '', authorName: 'Mock User', likes: [], dislikes: [], shills: [], fuds: [], timestamp: BigInt(Date.now() * 1_000_000), authorPrincipal: {} as import('@icp-sdk/core/principal').Principal, urlPreview: undefined, replyToId: undefined } }),
   deleteChatMessage: async (_messageId: bigint) => ({ __kind__: 'ok' as const, ok: null }),
   getCyclesBalance: async (): Promise<bigint> => 0n,
-};
+  _initializeAccessControl: async () => {},
+  };

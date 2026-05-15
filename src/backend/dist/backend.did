@@ -169,6 +169,7 @@ service : {
   deletePortfolioRecord: () -> ();
   deleteUserSettings: () -> ();
   fetchAndStoreMarketData: () -> ();
+  fetchCoinDeskItems: () -> (vec NewsItem);
   fetchCoinTelegraphItems: () -> (vec NewsItem);
   fetchDecryptItems: () -> (vec NewsItem);
   fetchDfinityBlogItems: () -> (vec NewsItem);
@@ -192,6 +193,9 @@ service : {
   /// Returns recent ICP news items. Each feed is fetched and cached independently
   /// with a 5-minute TTL. All three feeds are fetched IN PARALLEL so one slow
   /// feed cannot block the others. Stale cached items are served when a feed fails.
+  /// Returns recent ICP news items. Each feed is fetched and cached independently
+  /// with a 5-minute TTL. All four feeds are fetched IN PARALLEL so one slow
+  /// feed cannot block the others. Stale cached items are served when a feed fails.
   getICPNews: () -> (vec NewsItem);
   getICPNewsRaw: () -> (vec NewsItem);
   /// Fetches the current ICP price, caches successes, and falls back to stale cache.
@@ -200,6 +204,7 @@ service : {
   getICPPrice: () -> (PriceResponse);
   getICPPriceRaw: () -> (PriceResponse);
   getMarketChart: (days: nat) -> (vec PriceVolumePoint) query;
+  /// ICP donation address for keeping this service running.
   getMarketHistory: () -> (vec MarketDataPoint) query;
   getPortfolioRecord: () -> (PortfolioRecord) query;
   getPublishedAnnouncements: () -> (vec Announcement) query;
@@ -240,6 +245,8 @@ service : {
   transformAdminBalance: (input: TransformationInput) ->
    (TransformationOutput) query;
   transformBinance24h: (input: TransformationInput) ->
+   (TransformationOutput) query;
+  transformCoinDeskRss: (input: TransformationInput) ->
    (TransformationOutput) query;
   transformCoinTelegraphRss: (input: TransformationInput) ->
    (TransformationOutput) query;

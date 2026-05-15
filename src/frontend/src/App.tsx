@@ -19,6 +19,7 @@ import {
 import {
   useBackendActor,
   useCanisterStopped,
+  useChatMessages,
   useCyclesBalance,
   useExchangeRates,
   useFearGreed,
@@ -147,6 +148,8 @@ export default function App() {
   >("tracker");
   const [refreshInterval, setRefreshInterval] =
     useState<number>(getStoredInterval);
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
+  const lastSeenChatCountRef = useRef(0);
 
   // Listen for interval changes from SettingsPanel
   useEffect(() => {
@@ -240,6 +243,16 @@ export default function App() {
   // Load & apply persisted theme from user settings
   const { data: userSettings } = useUserSettings(refreshInterval);
   const { data: isAdmin } = useIsAdmin();
+  const { data: chatMessages } = useChatMessages(20, 0);
+
+  // Track unread chat messages when not on the chat tab
+  // biome-ignore lint/correctness/useExhaustiveDependencies: lastSeenChatCountRef is a ref
+  useEffect(() => {
+    const count = chatMessages?.length ?? 0;
+    if (activeTab !== "chat" && count > lastSeenChatCountRef.current) {
+      setUnreadChatCount(count - lastSeenChatCountRef.current);
+    }
+  }, [chatMessages, activeTab]);
   useEffect(() => {
     if (userSettings?.theme) {
       if (userSettings.theme === "dark") {
@@ -429,7 +442,7 @@ export default function App() {
               <TrendingUp className="w-4 h-4 text-accent" />
             </div>
             <span className="font-display font-semibold text-foreground tracking-tight">
-              ICP Pulse
+              ICP Nexus
             </span>
             {baseCurrency !== "USD" && (
               <span
@@ -631,7 +644,13 @@ export default function App() {
                 type="button"
                 role="tab"
                 aria-selected={activeTab === tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => {
+                  if (tab.id === "chat") {
+                    setUnreadChatCount(0);
+                    lastSeenChatCountRef.current = chatMessages?.length ?? 0;
+                  }
+                  setActiveTab(tab.id);
+                }}
                 className={`relative px-4 py-3.5 text-sm font-medium transition-smooth whitespace-nowrap ${
                   activeTab === tab.id
                     ? "text-accent"
@@ -639,7 +658,17 @@ export default function App() {
                 }`}
                 data-ocid={`tabs.${tab.id}.tab`}
               >
-                {tab.label}
+                <span className="flex items-center gap-1.5">
+                  {tab.label}
+                  {tab.id === "chat" && unreadChatCount > 0 && (
+                    <span
+                      className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-orange-500 text-white text-[10px] font-bold leading-none"
+                      data-ocid="tabs.chat.unread_badge"
+                    >
+                      {unreadChatCount > 99 ? "99+" : unreadChatCount}
+                    </span>
+                  )}
+                </span>
                 {activeTab === tab.id && (
                   <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-accent rounded-t-full" />
                 )}
